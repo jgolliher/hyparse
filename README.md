@@ -2,7 +2,7 @@
 
 Extract results from a HyTek `.hy3` results file. 
 
-HyTek's Meet Manager is the standard for swim meet management and each result file offers rich and interesting data. Extracting this data, however, is difficult. **Hyparse** is a Python-based tool for extracting data from `.hy3` files into a JSON format (CSV coming soon!)
+HyTek's Meet Manager is the standard for swim meet management and each result file offers rich and interesting data. Extracting this data, however, is difficult. **Hyparse** is a Python-based tool for extracting data from `.hy3` files into a JSON or a Pandas DataFrame.
 
 ## Usage
 
@@ -24,13 +24,16 @@ results = parser.results
 parser.file_info
 parser.athletes
 parser.teams
+
+# Output results to a DataFrame
+df = parser.results_to_dataframe()
 ```
 
 ## Up Next
 
 This is an *intial* pass at extraction. I need to work on a few things, namely:
 
-* Enabling CSV output
+* Relay extraction
 * Split extraction
 * Team scores
 

@@ -1,9 +1,22 @@
+import pandas as pd
+
+
 class HyTekParser:
     def __init__(self, filepath=None):
         self.filepath = filepath
         self.file_info = {}
         self.teams = []
         self.athletes = []
+        self.STROKE_CODES = {
+            "A": "Free",
+            "B": "Back",
+            "C": "Breast",
+            "D": "Fly",
+            "E": "Medley",
+            "F": "1m",
+            "G": "3m",
+            "H": "10m",
+        }
 
     def load_file(self, filepath: str):
         """Loads a HyTek .hy3 file for parsing.
@@ -262,3 +275,66 @@ class HyTekParser:
             elif line.startswith("C1"):
                 current_athlete = None  # Reset when switching to new team
                 current_event_entry = None
+
+    def results_to_dataframe(self) -> pd.DataFrame:
+        """Converts the extracted results data into a Pandas DataFrame.
+
+        Returns:
+            A Pandas DataFrame where each row represents an event entry with
+            associated athlete and result information.
+        """
+        rows = []
+        for result in self.results:
+            athlete = result["athlete"]
+            event = result["event"]
+            for r in result["results"]:
+                row = {
+                    "mm_id": athlete["mm_id"],
+                    "usas_id": athlete["usas_id"],
+                    "first_name": athlete["first_name"],
+                    "last_name": athlete["last_name"],
+                    "gender": athlete["gender"],
+                    "team": athlete["team"],
+                    "event_no": event["event_no"],
+                    "stroke": self.STROKE_CODES.get(event["stroke_code"], "Unknown"),
+                    "distance": event["distance"],
+                    "seed_time": event["seed_time"],
+                    "result_round": r["round"],
+                    "result_time": r["time"],
+                    "course": r["course"],
+                    "heat": r["heat"],
+                    "lane": r["lane"],
+                    "heat_place": r["heat_place"],
+                    "overall_place": r["overall_place"],
+                    "backup_time_1": r["backup_time_1"],
+                    "backup_time_2": r["backup_time_2"],
+                    "reaction_time": r["reaction_time"],
+                }
+                rows.append(row)
+
+            # Handle cases where there are no results
+            if not result["results"]:
+                row = {
+                    "mm_id": athlete["mm_id"],
+                    "usas_id": athlete["usas_id"],
+                    "first_name": athlete["first_name"],
+                    "last_name": athlete["last_name"],
+                    "gender": athlete["gender"],
+                    "team": athlete["team"],
+                    "event_no": event["event_no"],
+                    "stroke": self.STROKE_CODES.get(event["stroke_code"], "Unknown"),
+                    "distance": event["distance"],
+                    "seed_time": event["seed_time"],
+                    "result_round": None,
+                    "result_time": None,
+                    "course": None,
+                    "heat": None,
+                    "lane": None,
+                    "heat_place": None,
+                    "overall_place": None,
+                    "backup_time_1": None,
+                    "backup_time_2": None,
+                    "reaction_time": None,
+                }
+                rows.append(row)
+        return pd.DataFrame(rows)
