@@ -2,6 +2,35 @@ from typing import Dict, List, Tuple, Any, Optional
 
 
 class IndividualResult:
+    """Individual result representation from .hy3 file.
+
+
+    An IndividualResult object represents an individual result in a .hy3 file.
+    The information comes from lines E1 and E2, which are individual event entries
+    and individual event results, respectively. The parser from this package creates
+    multiple IndividualResult objects when extracting information, but this class
+    can represent an individual result if needed.
+
+    An IndividaulResult object contains the following attributes:
+
+    Attributes:
+        mm_athlete_id: Athlete's MeetManager ID (E1)
+        event_no: Event number (E1)
+        distance: Event distance (E1)
+        stroke_code: Event stroke code (E1)
+        seed_time: Athlete's seed (entry) time (E1)
+        round: Result round (P=Prelim, F=Final) (E2)
+        time: Result time (in seconds) (E2)
+        course: Result course (L=LCM, S=SCM, Y=Yards) (E2)
+        heat: Result heat (E2)
+        lane: Result lane (E2)
+        heat_place: Result heat place (E2)
+        overall_place: Result overall place (E2)
+        backup_time_1: Result backup time 1 (E2)
+        backup_time_2: Result backup time 2 (E2)
+        reaction_time: Result reaction time (E2)
+    """
+
     def __init__(
         self,
         mm_athlete_id: Optional[str],

@@ -1,5 +1,5 @@
 from typing import Dict, List, Tuple, Any, Optional
-from hyparse import MeetInfo, Athlete, Team, IndividualEntry, IndividualResult
+from hyparse import MeetInfo, Athlete, Team, IndividualResult
 import pandas as pd
 
 
@@ -14,6 +14,7 @@ class Hy3File:
         self.teams = []
         self.athletes = []
         self.individual_results = []
+        self.meet_info = None
         self.STROKE_CODES = {
             "A": "Free",
             "B": "Back",
@@ -37,6 +38,7 @@ class Hy3File:
         self.file_contents = [x.replace("\n", "") for x in self.file_contents]
         # Run checksum
         self._run_checksum(self.file_contents)
+        self.meet_info = self._extract_meet_info(self.file_contents)
         self._extract_teams(self.file_contents)
         self._extract_athletes(self.file_contents)
         self._extract_results(self.file_contents)
@@ -136,6 +138,38 @@ class Hy3File:
             str: A string representation of the .hy3 file.
         """
         return f"Hy3File(file_name={self.file_name})"
+
+    def _extract_meet_info(self, lines: List) -> MeetInfo:
+        """Extracts meet information."""
+        for line in lines:
+            if line.startswith("A1"):
+                a1_line = line
+            elif line.startswith("B1"):
+                b1_line = line
+            elif line.startswith("B2"):
+                b2_line = line
+
+        a1_line_id = a1_line[:2]
+        b1_line_id = b1_line[:2]
+        b2_line_id = b2_line[:2]
+        if a1_line_id != "A1":
+            raise ValueError(f"Line ID is not A1! Possible file issue.")
+        if b1_line_id != "B1":
+            raise ValueError(f"Line ID is not B1! Possible file issue.")
+        if b2_line_id != "B2":
+            raise ValueError(f"Line ID is not B2! Possible file issue.")
+
+        return MeetInfo(
+            meet_name=b1_line[2:47].strip(),
+            facility_name=b1_line[47:92].strip(),
+            meet_start_date=b1_line[92:100].strip(),
+            meet_end_date=b1_line[100:108].strip(),
+            elevation=b1_line[116:121].strip(),
+            course=b2_line[98].strip(),
+            result_type=a1_line[2:4].strip(),
+            mm_version=a1_line[44:58].strip(),
+            date_file_created=a1_line[58:68].strip(),
+        )
 
     def _parse_team_info(self, line: str) -> Team:
         """Parses a single C1 line from a .hy3 file and extracts team information.
@@ -333,8 +367,16 @@ class Hy3File:
             )
             full_results.append(inner_results)
         df = pd.DataFrame(full_results)
+        df["meet_name"] = self.meet_info.meet_name
+        df["facility_name"] = self.meet_info.facility_name
+        df["meet_start_date"] = self.meet_info.meet_start_date
+        df["meet_end_date"] = self.meet_info.meet_end_date
         df = df[
             [
+                "meet_name",
+                "facility_name",
+                "meet_start_date",
+                "meet_end_date",
                 "mm_athlete_id",
                 "usas_id",
                 "first_name",

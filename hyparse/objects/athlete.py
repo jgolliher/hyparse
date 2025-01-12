@@ -2,6 +2,25 @@ from typing import Dict, List, Tuple, Any, Optional
 
 
 class Athlete:
+    """Athlete representation from .hy3 file.
+
+    An Athlete object represents an athlete in a .hy3 file. The information comes from
+    the `D1` lines in a .hy3 file, which represent athlete entries.The parser from this
+    package creates multiple Athlete objects when extracting information, but this class
+    can represent an individual athlete if needed.
+
+    An Athlete object contains the following attributes:
+
+    Attributes:
+        gender: Athlete gender.
+        mm_id: Athlete's MeetManager ID.
+        first_name: Athlete first name.
+        nick_name: Athlete nick name.
+        last_name: Athlete last name.
+        usas_id: Athlete's (assumed) USA Swimming ID.
+        team: Athlete's team.
+    """
+
     def __init__(
         self,
         gender: Optional[str] = None,
