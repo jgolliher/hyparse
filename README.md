@@ -6,35 +6,37 @@ HyTek's Meet Manager is the standard for swim meet management and each result fi
 
 ## Usage
 
-The file `hytek_parser.py` contains a class called `HyTekParser` that can be used for extraction. The easiest way, for now, is to clone this repoistory and within the directory create your own Python file and running the following:
+The folder `hyparse` contains classes and methods for extraction. For now, the easiest way to use this library is to clone the repository and create a separate python file within the root of the repository (or use `main.py`). Then, you can run the following:
 
 ```python
-from hytek_parser import HyTekParser
+from hyparse import Hy3File
 
-file_name = "data/Meet Results-2024 Tennessee Invitational-19Nov2024-001.hy3" #Or your own file
+file_name = "data/Meet Results-2024 Tennessee Invitational-19Nov2024-001.hy3"
 
-# Example Usage
-parser = HyTekParser()
-parser.load_file(file_name)
+file = Hy3File(file_name=file_name)
+file.load_and_extract()
 
-# Save results to a dict
-results = parser.results
+# Extract individual results to Pandas DataFrame
+file.to_df()
 
-# Other objects
-parser.file_info
-parser.athletes
-parser.teams
+# Extract all Athelte objects (returns List[Athlete])
+file.athletes
 
-# Output results to a DataFrame
-df = parser.results_to_dataframe()
+# Extract all Team objects (returns List[Team])
+file.teams
+
+# Extract all IndividaulResult objects (returns List[IndividualResult])
+file.individual_results
+
 ```
 
 ## Up Next
 
-This is an *intial* pass at extraction. I need to work on a few things, namely:
+This continues to be an initial pass at extraction. I need to work on a few things, namely:
 
 * Relay extraction
 * Split extraction
-* Team scores
+* Team scores (though I'm not sure if this is stored in the .hy3 file)
+* Code cleanup and better object-oriented programming
 
 I'd also like to build a PostgreSQL database that stores all processed meets, but that's another project :) 
