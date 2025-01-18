@@ -2,33 +2,45 @@ from typing import Dict, List, Tuple, Any, Optional
 
 
 class IndividualResult:
-    """Individual result representation from .hy3 file.
+    """Represents an individual swimming result.
 
-
-    An IndividualResult object represents an individual result in a .hy3 file.
-    The information comes from lines E1 and E2, which are individual event entries
-    and individual event results, respectively. The parser from this package creates
-    multiple IndividualResult objects when extracting information, but this class
-    can represent an individual result if needed.
-
-    An IndividaulResult object contains the following attributes:
+    Stores information about an individual result from a .hy3 file, parsed
+    from 'E1' (event entry) and 'E2' (event result) lines.
 
     Attributes:
-        mm_athlete_id: Athlete's MeetManager ID (E1)
-        event_no: Event number (E1)
-        distance: Event distance (E1)
-        stroke_code: Event stroke code (E1)
-        seed_time: Athlete's seed (entry) time (E1)
-        round: Result round (P=Prelim, F=Final) (E2)
-        time: Result time (in seconds) (E2)
-        course: Result course (L=LCM, S=SCM, Y=Yards) (E2)
-        heat: Result heat (E2)
-        lane: Result lane (E2)
-        heat_place: Result heat place (E2)
-        overall_place: Result overall place (E2)
-        backup_time_1: Result backup time 1 (E2)
-        backup_time_2: Result backup time 2 (E2)
-        reaction_time: Result reaction time (E2)
+        mm_athlete_id (str, optional): The athlete's MeetManager ID.
+        event_no (str, optional): The event number.
+        distance (str, optional): The event distance.
+        stroke_code (str, optional): The event stroke code.
+        seed_time (str, optional): The athlete's seed time.
+        round (str, optional): The round of the result (e.g., 'P' for prelims, 'F' for finals).
+        time (str, optional): The result time (in seconds).
+        course (str, optional): The course type (e.g., 'L' for long course meters, 'S' for short course meters, 'Y' for yards).
+        heat (str, optional): The heat number.
+        lane (str, optional): The lane number.
+        heat_place (str, optional): The athlete's place within the heat.
+        overall_place (str, optional): The athlete's overall place in the event.
+        backup_time_1 (str, optional): Backup time 1.
+        backup_time_2 (str, optional): Backup time 2.
+        reaction_time (str, optional): The athlete's reaction time.
+
+    Example:
+        >>> result = IndividualResult(
+        ...     mm_athlete_id='12345',
+        ...     event_no='9',
+        ...     distance='200',
+        ...     stroke_code='E',
+        ...     seed_time='113.01',
+        ...     round='F',
+        ...     time='111.62',
+        ...     course='Y',
+        ...     heat='3',
+        ...     lane='4',
+        ...     heat_place='1',
+        ...     overall_place='1'
+        ... )
+        >>> print(result.time)
+        111.62
     """
 
     def __init__(
@@ -52,21 +64,33 @@ class IndividualResult:
         """Initializes an IndividualResult object.
 
         Args:
-            mm_athlete_id (str, optional): Athlete ID from Meet Manager.
-            event_no (str, optional): Event number.
-            distance (str, optional): Event distance.
-            stroke_code (str, optional): Event stroke code.
-            seed_time (str, optional): Athlete's seed (entry) time.
-            round (str, optional): Result round (P=Prelim, F=Final) #TODO: Semis?
-            time (str, optional): Result time (in seconds)
-            course (str, optional): Result course (L=LCM, S=SCM, Y=Yards)
-            heat (str, optional): Result heat.
-            lane (str, optional): Result lane.
-            heat_place (str, optional): Result heat place.
-            overall_place (str, optional): Result overall place.
-            backup_time_1 (str, optional): Result backup time 1.
-            backup_time_2 (str, optional): Result backup time 2.
-            reaction_time (str, optional): Result reaction time.
+            mm_athlete_id (str, optional): The athlete's MeetManager ID.
+            event_no (str, optional): The event number.
+            distance (str, optional): The event distance.
+            stroke_code (str, optional): The event stroke code.
+            seed_time (str, optional): The athlete's seed time.
+            round (str, optional): The round of the result (e.g., 'P' for prelims, 'F' for finals, 'S' for semifinals).
+            time (str, optional): The result time (in seconds).
+            course (str, optional): The course type (e.g., 'L' for long course meters, 'S' for short course meters, 'Y' for yards).
+            heat (str, optional): The heat number.
+            lane (str, optional): The lane number.
+            heat_place (str, optional): The athlete's place within the heat.
+            overall_place (str, optional): The athlete's overall place in the event.
+            backup_time_1 (str, optional): Backup time 1.
+            backup_time_2 (str, optional): Backup time 2.
+            reaction_time (str, optional): The athlete's reaction time.
+
+        Example:
+            >>> result = IndividualResult(
+            ...     mm_athlete_id='12345',
+            ...     event_no='1',
+            ...     distance='50',
+            ...     stroke_code='A',
+            ...     time='20.03'
+            ... )
+            >>> print(repr(result))
+            Result(athlete_id='12345', round='None',event_no='1', stroke_code='A')
+
         """
         self.mm_athlete_id = mm_athlete_id
         self.event_no = event_no
@@ -88,14 +112,26 @@ class IndividualResult:
         """Returns a string representation of the IndividualResult object.
 
         Returns:
-            str: A string representation of the IndividualResult object.
+            str: A string representation of the object.
+
+        Example:
+            >>> result = IndividualResult(mm_athlete_id='12345', event_no='1', stroke_code='A')
+            >>> print(repr(result))
+            Result(athlete_id='12345', round='None',event_no='1', stroke_code='A')
+
         """
         return f"Result(athlete_id='{self.mm_athlete_id}', round='{self.round}',event_no='{self.event_no}', stroke_code='{self.stroke_code}')"
 
     def to_dict(self) -> Dict:
-        """Returns a dictionary representation of the Athlete object.
+        """Returns a dictionary representation of the IndividualResult object.
 
         Returns:
-            Dict: A dictionary representation of the Athlete object.
+            dict: A dictionary containing the object's attributes.
+
+        Example:
+            >>> result = IndividualResult(mm_athlete_id='12345', time='54.50')
+            >>> result_dict = result.to_dict()
+            >>> print(result_dict['time'])
+            54.50
         """
         return self.__dict__
