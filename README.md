@@ -5,7 +5,6 @@ Extract results from  `.hy3` results file.
 HY3 files are the standardfor swim meet management and each result file offers rich and interesting data. Extracting this data, however, is difficult. **Hyparse** is a Python-based tool for extracting data from `.hy3` files into a JSON or a Pandas DataFrame.
 
 
-
 ## Usage
 
 The folder `hyparse` contains classes and methods for extraction. For now, the easiest way to use this library is by running `main.py` with your own custom arguments set. Another way to to create a separate python file within the root of the repository and running the code from there.
@@ -16,7 +15,7 @@ The following will extract individual and relay results to two separate CSV file
 
 1. Open Terminal
 2. CD to the directory where `main.py` is (e.g., `CD /Users/jgolliher/hyparse`)
-3. Run `python main.py "path/to/hy3_file.hy3" "path/to/save/csv_files.csv"` (e.g., `python main.py "data/Meet Results-2024 Tennessee Invitational-19Nov2024-001.hy3" "data"`)
+3. Run `python main.py "path/to/hy3_file.hy3" "path/to/save/csv_files.csv"` (e.g., `python main.py "data/hy3/Meet Results-2024 Tennessee Invitational-19Nov2024-001.hy3" "data/csv"`)
 
 ### Option #2: Separate Python File
 
@@ -25,7 +24,7 @@ After cloning the repo, create a new Python file in the root directory and use t
 ```python
 from hyparse import Hy3File
 
-file_name = "data/Meet Results-2024 Tennessee Invitational-19Nov2024-001.hy3"
+file_name = "data/hy3/Meet Results-2024 Tennessee Invitational-19Nov2024-001.hy3"
 
 file = Hy3File(file_name=file_name)
 
