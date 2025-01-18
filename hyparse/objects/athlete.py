@@ -2,23 +2,32 @@ from typing import Dict, List, Tuple, Any, Optional
 
 
 class Athlete:
-    """Athlete representation from .hy3 file.
+    """Represents an athlete from a .hy3 file.
 
-    An Athlete object represents an athlete in a .hy3 file. The information comes from
-    the `D1` lines in a .hy3 file, which represent athlete entries.The parser from this
-    package creates multiple Athlete objects when extracting information, but this class
-    can represent an individual athlete if needed.
-
-    An Athlete object contains the following attributes:
+    An Athlete object stores information about an athlete, parsed from 'D1' lines
+    in a .hy3 file.  These lines represent individual athlete entries. While the
+    parser creates multiple Athlete objects during extraction, this class can also
+    represent a single athlete.
 
     Attributes:
-        gender: Athlete gender.
-        mm_id: Athlete's MeetManager ID.
-        first_name: Athlete first name.
-        nick_name: Athlete nick name.
-        last_name: Athlete last name.
-        usas_id: Athlete's (assumed) USA Swimming ID.
-        team: Athlete's team.
+        gender (str, optional): The athlete's gender.
+        mm_id (str, optional): The athlete's MeetManager ID.
+        first_name (str, optional): The athlete's first name.
+        nick_name (str, optional): The athlete's nickname.
+        last_name (str, optional): The athlete's last name.
+        usas_id (str, optional): The athlete's USA Swimming ID (or any other ID
+            provided in Team Manager).
+        team (str, optional): The athlete's team name.
+
+    Example:
+        >>> athlete = Athlete(
+        ...     first_name='Erika',
+        ...     last_name='Brown',
+        ...     usas_id='1234567',
+        ...     team='TENN'
+        ... )
+        >>> print(athlete.first_name)
+        Erika
     """
 
     def __init__(
@@ -34,14 +43,24 @@ class Athlete:
         """Initializes an Athlete object.
 
         Args:
-            gender (str, optional): Athlete gender.
-            mm_id (str, optional): Athlete's MeetManager ID.
-            first_name (str, optional): Athlete first name.
-            nick_name (str, optional): Athlete nick name.
-            last_name (str, optional): Athlete last name.
-            usas_id (str, optional): Athlete's (assumed) USA Swimming ID. Can technically
-                be any ID provided in Team Manager, but is usually the USA Swimming ID.
-            team (str, optional): Athlete's team.
+            gender (str, optional): The athlete's gender.
+            mm_id (str, optional): The athlete's MeetManager ID.
+            first_name (str, optional): The athlete's first name.
+            nick_name (str, optional): The athlete's nickname.
+            last_name (str, optional): The athlete's last name.
+            usas_id (str, optional): The athlete's USA Swimming ID (or any other ID
+                provided in Team Manager).
+            team (str, optional): The athlete's team name.
+
+        Example:
+            >>> athlete = Athlete(
+            ...     first_name='Meghan',
+            ...     last_name='Small',
+            ...     team='TENN'
+            ... )
+            >>> print(athlete)
+            Athlete(name='Meghan Small', team='TENN')
+
         """
         self.gender = gender
         self.mm_id = mm_id
@@ -55,14 +74,27 @@ class Athlete:
         """Returns a string representation of the Athlete object.
 
         Returns:
-            str: A string representation of the Athlete object.
+            str: A string representation of the Athlete object, including the athlete's
+                name and team.
+
+        Example:
+            >>> athlete = Athlete(first_name='Tess', last_name='Cieplucha', team='TENN')
+            >>> print(repr(athlete))
+            Athlete(name='Tess Cieplucha', team='TENN')
         """
-        return f"Athlete(name='{self.first_name} {self.last_name}', team='{self.team}')"
+        name = f"{self.first_name or ''} {self.last_name or ''}".strip()
+        return f"Athlete(name='{name}', team='{self.team}')"
 
     def to_dict(self) -> Dict:
         """Returns a dictionary representation of the Athlete object.
 
         Returns:
-            Dict: A dictionary representation of the Athlete object.
+            dict: A dictionary containing the athlete's attributes.
+
+        Example:
+            >>> athlete = Athlete(first_name='Matthew', last_name='Garcia', team='TENN')
+            >>> athlete_dict = athlete.to_dict()
+            >>> print(athlete_dict['first_name'])
+            Matthew
         """
         return self.__dict__
