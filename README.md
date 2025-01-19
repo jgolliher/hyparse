@@ -15,7 +15,7 @@ The following will extract individual and relay results to two separate CSV file
 
 1. Open Terminal
 2. CD to the directory where `main.py` is (e.g., `CD /Users/jgolliher/hyparse`)
-3. Run `python main.py "path/to/hy3_file.hy3" "path/to/save/csv_files.csv"` (e.g., `python main.py "data/hy3/Meet Results-2024 Tennessee Invitational-19Nov2024-001.hy3" "data/csv"`)
+3. Run `python main.py "path/to/hy3_file.hy3" "path/to/save/csv_files"` (e.g., `python main.py "data/hy3/Meet Results-2024 Tennessee Invitational-19Nov2024-001.hy3" "data/csv"`)
 
 ### Option #2: Separate Python File
 
