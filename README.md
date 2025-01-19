@@ -2,7 +2,7 @@
 
 Extract results from  `.hy3` results file. 
 
-HY3 files are the standardfor swim meet management and each result file offers rich and interesting data. Extracting this data, however, is difficult. **Hyparse** is a Python-based tool for extracting data from `.hy3` files into a JSON or a Pandas DataFrame.
+HY3 files are the standard for swim meet management and each result file offers rich and interesting data. Extracting this data, however, is difficult. **Hyparse** is a Python-based tool for extracting data from `.hy3` files into a JSON or a Pandas DataFrame.
 
 
 ## Usage
