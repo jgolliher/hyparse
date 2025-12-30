@@ -98,9 +98,7 @@ def rank_times(
 
     # --- Perform Ranking ---
     try:
-        df[out_col] = df.groupby(group_cols, observed=True, dropna=False)[
-            rank_col
-        ].rank(
+        df[out_col] = df.groupby(group_cols, observed=True, dropna=False)[rank_col].rank(
             method="min",  # Use 'min' for standard competition ranking
             ascending=True,  # Lower values (faster times) get lower ranks (1 is best)
             na_option="bottom",  # Place NaN values at the end (highest rank number)

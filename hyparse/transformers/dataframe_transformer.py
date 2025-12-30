@@ -110,9 +110,7 @@ class DataFrameTransformer:
                 df[col] = None
         return df
 
-    def _reorder_columns(
-        self, df: pd.DataFrame, column_order: List[str]
-    ) -> pd.DataFrame:
+    def _reorder_columns(self, df: pd.DataFrame, column_order: List[str]) -> pd.DataFrame:
         """Reorders DataFrame columns to match specified order.
 
         Args:
@@ -355,9 +353,7 @@ class RelayResultTransformer(DataFrameTransformer):
         if all(col in df.columns for col in required_cols):
             # Create ranked dataframe, dropping duplicate entries
             ranked_times = rank_times(
-                df=df.drop_duplicates(
-                    subset=["event_no", "team_abbr", "relay_team"]
-                ).copy(),
+                df=df.drop_duplicates(subset=["event_no", "team_abbr", "relay_team"]).copy(),
                 rank_col="seed_time",
                 out_col="seed_rank",
             )

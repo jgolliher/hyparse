@@ -70,9 +70,7 @@ class TestSsToDisplay:
         """Test that formatting maintains 2 decimal precision."""
         assert ss_to_display(45.678) == "45.68"  # Rounded up
         assert ss_to_display(45.671) == "45.67"  # Rounded down
-        assert (
-            ss_to_display(59.995) == "59.99"
-        )  # Banker's rounding (round half to even)
+        assert ss_to_display(59.995) == "59.99"  # Banker's rounding (round half to even)
 
 
 class TestRankTimes:
@@ -80,9 +78,7 @@ class TestRankTimes:
 
     def test_basic_ranking(self):
         """Test basic ranking within a single event."""
-        df = pd.DataFrame(
-            {"event_no": [1, 1, 1, 1], "seed_time": [50.5, 48.2, 52.1, 49.0]}
-        )
+        df = pd.DataFrame({"event_no": [1, 1, 1, 1], "seed_time": [50.5, 48.2, 52.1, 49.0]})
         result = rank_times(df, rank_col="seed_time", out_col="rank")
 
         assert "rank" in result.columns
@@ -90,9 +86,7 @@ class TestRankTimes:
 
     def test_ranking_with_ties(self):
         """Test ranking when there are tied values."""
-        df = pd.DataFrame(
-            {"event_no": [1, 1, 1, 1], "seed_time": [50.0, 48.0, 50.0, 49.0]}
-        )
+        df = pd.DataFrame({"event_no": [1, 1, 1, 1], "seed_time": [50.0, 48.0, 50.0, 49.0]})
         result = rank_times(df, rank_col="seed_time", out_col="rank")
 
         # Ranks should be: 48.0=1, 49.0=2, 50.0=3, 50.0=3 (both get rank 3)
@@ -100,9 +94,7 @@ class TestRankTimes:
 
     def test_ranking_multiple_events(self):
         """Test ranking across multiple events (grouped)."""
-        df = pd.DataFrame(
-            {"event_no": [1, 1, 2, 2], "seed_time": [50.0, 48.0, 45.0, 47.0]}
-        )
+        df = pd.DataFrame({"event_no": [1, 1, 2, 2], "seed_time": [50.0, 48.0, 45.0, 47.0]})
         result = rank_times(df, rank_col="seed_time", out_col="rank")
 
         # Event 1: 48.0=1, 50.0=2
@@ -112,9 +104,7 @@ class TestRankTimes:
 
     def test_nan_values_ranked_last(self):
         """Test that NaN values are ranked last."""
-        df = pd.DataFrame(
-            {"event_no": [1, 1, 1, 1], "seed_time": [50.0, np.nan, 48.0, np.nan]}
-        )
+        df = pd.DataFrame({"event_no": [1, 1, 1, 1], "seed_time": [50.0, np.nan, 48.0, np.nan]})
         result = rank_times(df, rank_col="seed_time", out_col="rank")
 
         # 48.0=1, 50.0=2, NaN=3, NaN=3 (both NaN get same rank at bottom)
@@ -160,18 +150,14 @@ class TestRankTimes:
 
     def test_non_numeric_column_raises_error(self):
         """Test that non-numeric rank column raises TypeError."""
-        df = pd.DataFrame(
-            {"event_no": [1, 1], "seed_time": ["fast", "slow"]}
-        )  # Non-numeric
+        df = pd.DataFrame({"event_no": [1, 1], "seed_time": ["fast", "slow"]})  # Non-numeric
 
         with pytest.raises(TypeError, match="Failed to rank column"):
             rank_times(df, rank_col="seed_time")
 
     def test_default_parameters(self):
         """Test that default parameters work correctly."""
-        df = pd.DataFrame(
-            {"event_no": [1, 1, 2, 2], "seed_time_ss": [50.0, 48.0, 45.0, 47.0]}
-        )
+        df = pd.DataFrame({"event_no": [1, 1, 2, 2], "seed_time_ss": [50.0, 48.0, 45.0, 47.0]})
         # Using defaults: group_cols=['event_no'], rank_col='seed_time_ss', out_col='rank'
         result = rank_times(df)
 
