@@ -1,5 +1,8 @@
 # Custom
 *local_test.py
+.vscode
+.env
+.claude
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -26,10 +26,11 @@ from hyparse import Hy3File
 
 file_name = "data/hy3/Meet Results-2024 Tennessee Invitational-19Nov2024-001.hy3"
 
+# Parse the file (use strict_mode=True to raise exceptions on errors)
 file = Hy3File(file_name=file_name)
 
 # Extract meet information to a dict
-file.meet_info.to_dict()
+file.meet_info.model_dump()  # Pydantic 2.0 method (was .to_dict())
 
 # Extract individual results to Pandas DataFrame
 file.individual_results_to_df()
@@ -38,16 +39,18 @@ file.individual_results_to_df()
 file.relay_results_to_df()
 
 
-# Extract all Athelte objects (returns List[Athlete])
-file.athletes
+# Access Athlete objects (returns Dict[str, Athlete] - use .values() for list)
+list(file.athletes.values())  # Get all athletes as a list
+file.athletes['12345']  # Access specific athlete by MM ID
 
-# Extract all Team objects (returns List[Team])
-file.teams
+# Access Team objects (returns Dict[str, Team] - use .values() for list)
+list(file.teams.values())  # Get all teams as a list
+file.teams['ABC']  # Access specific team by abbreviation
 
-# Extract all IndividaulResult objects (returns List[IndividualResult])
+# Access IndividualResult objects (returns List[IndividualResult])
 file.individual_results
 
-# Extract all RelayResult objects (returns List[RelayResult])
+# Access RelayResult objects (returns List[RelayResult])
 file.relay_results
 ```
 
