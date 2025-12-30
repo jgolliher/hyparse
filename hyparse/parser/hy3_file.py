@@ -48,21 +48,15 @@ class Hy3File:
         self.relay_results: List[RelayResult] = []
         self.meet_info: Optional[MeetInfo] = None
         self.raw_lines: List[str] = []
-        self.parse_errors: List[Tuple[int, str, str]] = (
-            []
-        )  # (line_num, line_content, error_msg)
+        self.parse_errors: List[Tuple[int, str, str]] = []  # (line_num, line_content, error_msg)
 
         self._load_and_process_file()
 
     def _load_and_process_file(self):
         """Loads, cleans, validates checksums, and parses the file content."""
         try:
-            with open(
-                self.file_name, "r", encoding="latin-1"
-            ) as f:  # Common encoding for hy3
-                self.raw_lines = [
-                    line.rstrip("\r\n") for line in f
-                ]  # Strip trailing newlines/CR
+            with open(self.file_name, "r", encoding="latin-1") as f:  # Common encoding for hy3
+                self.raw_lines = [line.rstrip("\r\n") for line in f]  # Strip trailing newlines/CR
         except FileNotFoundError:
             logger.error(f"File not found: {self.file_name}")
             raise
@@ -85,9 +79,7 @@ class Hy3File:
                 raise FileFormatError("; ".join(structure_errors))
 
         # Validate checksums
-        checksums_valid, checksum_errors = ChecksumValidator.validate_lines(
-            self.raw_lines
-        )
+        checksums_valid, checksum_errors = ChecksumValidator.validate_lines(self.raw_lines)
         if not checksums_valid:
             # Add checksum errors to parse_errors
             self.parse_errors.extend(checksum_errors)
@@ -170,45 +162,33 @@ class Hy3File:
                     )
 
                 elif line_id == "C1":
-                    team = Team(
-                        **{k: v for k, v in parsed_data.items() if k != "line_id"}
-                    )
+                    team = Team(**{k: v for k, v in parsed_data.items() if k != "line_id"})
                     if team.team_abbreviation:
                         self.teams[team.team_abbreviation] = team
                         current_team_abbr = team.team_abbreviation
                     else:
-                        self.parse_errors.append(
-                            (i + 1, line, "Team abbreviation missing")
-                        )
+                        self.parse_errors.append((i + 1, line, "Team abbreviation missing"))
 
                 elif line_id == "D1":
                     if current_team_abbr:
-                        athlete_data = {
-                            k: v for k, v in parsed_data.items() if k != "line_id"
-                        }
+                        athlete_data = {k: v for k, v in parsed_data.items() if k != "line_id"}
                         athlete_data["team"] = current_team_abbr  # Assign current team
                         athlete = Athlete(**athlete_data)
                         if athlete.mm_id:
                             self.athletes[athlete.mm_id] = athlete
                         else:
-                            self.parse_errors.append(
-                                (i + 1, line, "Athlete mm_id missing")
-                            )
+                            self.parse_errors.append((i + 1, line, "Athlete mm_id missing"))
                     else:
                         self.parse_errors.append(
                             (i + 1, line, "Athlete record found before team record")
                         )
 
                 elif line_id == "E1":
-                    pending_e1_data = {
-                        k: v for k, v in parsed_data.items() if k != "line_id"
-                    }
+                    pending_e1_data = {k: v for k, v in parsed_data.items() if k != "line_id"}
 
                 elif line_id == "E2":
                     if pending_e1_data:
-                        result_data = {
-                            k: v for k, v in parsed_data.items() if k != "line_id"
-                        }
+                        result_data = {k: v for k, v in parsed_data.items() if k != "line_id"}
                         # Combine E1 and E2 data. E2 values overwrite E1 for overlapping keys.
                         combined_data = {**pending_e1_data, **result_data}
 
@@ -218,9 +198,7 @@ class Hy3File:
 
                         try:
                             # Instantiation using the combined dictionary
-                            self.individual_results.append(
-                                IndividualResult(**combined_data)
-                            )
+                            self.individual_results.append(IndividualResult(**combined_data))
                         except (TypeError, ValidationError) as e:
                             self.parse_errors.append(
                                 (
@@ -238,21 +216,15 @@ class Hy3File:
                         self.parse_errors.append(
                             (i + 1, line, "E2 record found without preceding E1")
                         )
-                        logger.warning(
-                            f"Line {i+1}: E2 record found without preceding E1: {line}"
-                        )
+                        logger.warning(f"Line {i+1}: E2 record found without preceding E1: {line}")
 
                 elif line_id == "F1":
-                    pending_f1_f2_data = {
-                        k: v for k, v in parsed_data.items() if k != "line_id"
-                    }
+                    pending_f1_f2_data = {k: v for k, v in parsed_data.items() if k != "line_id"}
 
                 elif line_id == "F2":
                     # CORRECTED CHECK: Simply check if pending_f1_f2_data exists (is not None/empty)
                     if pending_f1_f2_data:
-                        f2_data = {
-                            k: v for k, v in parsed_data.items() if k != "line_id"
-                        }
+                        f2_data = {k: v for k, v in parsed_data.items() if k != "line_id"}
                         # Extract reaction times into a list
                         reaction_times = [
                             f2_data.pop("reaction_time_1", None),
@@ -274,17 +246,13 @@ class Hy3File:
                         self.parse_errors.append(
                             (i + 1, line, "F2 record found without preceding F1")
                         )
-                        logger.warning(
-                            f"Line {i+1}: F2 record found without preceding F1: {line}"
-                        )
+                        logger.warning(f"Line {i+1}: F2 record found without preceding F1: {line}")
                         pending_f1_f2_data = None  # Reset
 
                 elif line_id == "F3":
                     # CORRECTED CHECK: Simply check if pending_f1_f2_data exists (is not None/empty)
                     if pending_f1_f2_data:  # Check if F1/F2 data exists
-                        f3_data = {
-                            k: v for k, v in parsed_data.items() if k != "line_id"
-                        }
+                        f3_data = {k: v for k, v in parsed_data.items() if k != "line_id"}
                         relay_athletes = [
                             f3_data.get("athlete_1_mm_id"),
                             f3_data.get("athlete_2_mm_id"),

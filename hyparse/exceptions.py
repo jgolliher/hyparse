@@ -15,9 +15,7 @@ class ChecksumError(Hy3ParseError):
         self.expected = expected
         self.actual = actual
         self.line = line
-        super().__init__(
-            f"Line {line_num}: Checksum mismatch. Expected {expected}, got {actual}"
-        )
+        super().__init__(f"Line {line_num}: Checksum mismatch. Expected {expected}, got {actual}")
 
 
 class InvalidLineError(Hy3ParseError):

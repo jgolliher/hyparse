@@ -43,9 +43,7 @@ class TestAthlete:
 
     def test_athlete_creation(self):
         """Test basic Athlete object creation."""
-        athlete = Athlete(
-            mm_id="12345", first_name="John", last_name="Doe", gender="M", team="ABC"
-        )
+        athlete = Athlete(mm_id="12345", first_name="John", last_name="Doe", gender="M", team="ABC")
 
         assert athlete.mm_id == "12345"
         assert athlete.first_name == "John"
@@ -208,9 +206,7 @@ class TestRelayResult:
 
     def test_relay_result_with_athletes(self):
         """Test relay with athlete IDs."""
-        result = RelayResult(
-            team_abbr="XYZ", relay_athletes=["101", "102", "103", "104"]
-        )
+        result = RelayResult(team_abbr="XYZ", relay_athletes=["101", "102", "103", "104"])
 
         assert len(result.relay_athletes) == 4
         assert result.relay_athletes[0] == "101"
@@ -218,9 +214,7 @@ class TestRelayResult:
 
     def test_relay_result_with_reaction_times(self):
         """Test relay with reaction times."""
-        result = RelayResult(
-            team_abbr="ABC", reaction_times=["0.65", "0.71", "0.68", "0.73"]
-        )
+        result = RelayResult(team_abbr="ABC", reaction_times=["0.65", "0.71", "0.68", "0.73"])
 
         assert len(result.reaction_times) == 4
         assert result.reaction_times[0] == "0.65"
@@ -236,9 +230,7 @@ class TestRelayResult:
 
     def test_relay_result_to_dict(self):
         """Test conversion to dictionary."""
-        result = RelayResult(
-            team_abbr="TEST", relay_team="B", relay_athletes=["1", "2", "3", "4"]
-        )
+        result = RelayResult(team_abbr="TEST", relay_team="B", relay_athletes=["1", "2", "3", "4"])
         result_dict = result.to_dict()
 
         assert isinstance(result_dict, dict)
@@ -248,9 +240,7 @@ class TestRelayResult:
 
     def test_relay_result_partial_athletes(self):
         """Test relay with fewer than 4 athletes."""
-        result = RelayResult(
-            team_abbr="ABC", relay_athletes=["101", "102"]
-        )  # Only 2 athletes
+        result = RelayResult(team_abbr="ABC", relay_athletes=["101", "102"])  # Only 2 athletes
 
         assert len(result.relay_athletes) == 2
         # This is valid - not all relays must have exactly 4 swimmers

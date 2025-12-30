@@ -38,9 +38,7 @@ class RelayResult(BaseModel):
     gender: Optional[Literal["M", "F", "X"]] = None
     event_no: Optional[str] = None
     distance: Optional[str] = None
-    stroke_code: Optional[Literal["A", "E"]] = (
-        None  # Relays are typically Free or Medley
-    )
+    stroke_code: Optional[Literal["A", "E"]] = None  # Relays are typically Free or Medley
     round: Optional[Literal["P", "F", "S", "T"]] = None
     seed_time: Optional[str] = None
     time: Optional[str] = None

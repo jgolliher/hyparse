@@ -11,9 +11,7 @@ class TestChecksumCalculation:
         """Test basic checksum calculation with known values."""
         # Test line from actual .hy3 file format
         # Format: content + 2-digit checksum at end
-        test_line = (
-            "A102                                            MM 8.0     20251101  88"
-        )
+        test_line = "A102                                            MM 8.0     20251101  88"
 
         # Use the ChecksumValidator directly
         calculated = ChecksumValidator.calculate_checksum(test_line)
@@ -56,9 +54,7 @@ class TestChecksumValidation:
         import tempfile
 
         # Create a file with known valid checksum
-        valid_line = (
-            "A102                                            MM 8.0     20251101  88\n"
-        )
+        valid_line = "A102                                            MM 8.0     20251101  88\n"
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".hy3", delete=False) as f:
             f.write(valid_line)
@@ -67,9 +63,7 @@ class TestChecksumValidation:
         try:
             hy3 = Hy3File(temp_path)
             # Check parse_errors for checksum errors
-            checksum_errors = [
-                e for e in hy3.parse_errors if "checksum" in e[2].lower()
-            ]
+            checksum_errors = [e for e in hy3.parse_errors if "checksum" in e[2].lower()]
 
             # Should be empty if checksum is valid
             # Note: Might have other parse errors, just check no checksum errors
@@ -93,9 +87,7 @@ class TestChecksumValidation:
         try:
             hy3 = Hy3File(temp_path)
             # Check parse_errors for checksum mismatch
-            checksum_errors = [
-                e for e in hy3.parse_errors if "checksum mismatch" in e[2].lower()
-            ]
+            checksum_errors = [e for e in hy3.parse_errors if "checksum mismatch" in e[2].lower()]
 
             # Should have at least one checksum error
             assert len(checksum_errors) > 0
