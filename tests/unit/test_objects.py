@@ -1,12 +1,6 @@
 """Unit tests for data objects in hyparse.objects."""
-import pytest
-from hyparse.objects import (
-    MeetInfo,
-    Athlete,
-    Team,
-    IndividualResult,
-    RelayResult
-)
+
+from hyparse.objects import MeetInfo, Athlete, Team, IndividualResult, RelayResult
 
 
 class TestMeetInfo:
@@ -18,7 +12,7 @@ class TestMeetInfo:
             meet_name="Test Championship",
             facility_name="Test Pool",
             meet_start_date="20251201",
-            meet_end_date="20251203"
+            meet_end_date="20251203",
         )
 
         assert meet.meet_name == "Test Championship"
@@ -36,15 +30,12 @@ class TestMeetInfo:
 
     def test_meetinfo_to_dict(self):
         """Test conversion to dictionary."""
-        meet = MeetInfo(
-            meet_name="Test Meet",
-            course="Y"
-        )
+        meet = MeetInfo(meet_name="Test Meet", course="Y")
         result = meet.to_dict()
 
         assert isinstance(result, dict)
-        assert result['meet_name'] == "Test Meet"
-        assert result['course'] == "Y"
+        assert result["meet_name"] == "Test Meet"
+        assert result["course"] == "Y"
 
 
 class TestAthlete:
@@ -53,11 +44,7 @@ class TestAthlete:
     def test_athlete_creation(self):
         """Test basic Athlete object creation."""
         athlete = Athlete(
-            mm_id="12345",
-            first_name="John",
-            last_name="Doe",
-            gender="M",
-            team="ABC"
+            mm_id="12345", first_name="John", last_name="Doe", gender="M", team="ABC"
         )
 
         assert athlete.mm_id == "12345"
@@ -77,17 +64,13 @@ class TestAthlete:
 
     def test_athlete_to_dict(self):
         """Test conversion to dictionary."""
-        athlete = Athlete(
-            mm_id="12345",
-            first_name="Jane",
-            last_name="Smith"
-        )
+        athlete = Athlete(mm_id="12345", first_name="Jane", last_name="Smith")
         result = athlete.to_dict()
 
         assert isinstance(result, dict)
-        assert result['mm_id'] == "12345"
-        assert result['first_name'] == "Jane"
-        assert result['last_name'] == "Smith"
+        assert result["mm_id"] == "12345"
+        assert result["first_name"] == "Jane"
+        assert result["last_name"] == "Smith"
 
     def test_athlete_repr(self):
         """Test string representation."""
@@ -106,7 +89,7 @@ class TestTeam:
         team = Team(
             team_abbreviation="ABC",
             full_team_name="ABC Swimming Club",
-            team_short_name="ABC SC"
+            team_short_name="ABC SC",
         )
 
         assert team.team_abbreviation == "ABC"
@@ -123,15 +106,12 @@ class TestTeam:
 
     def test_team_to_dict(self):
         """Test conversion to dictionary."""
-        team = Team(
-            team_abbreviation="TEST",
-            full_team_name="Test Team"
-        )
+        team = Team(team_abbreviation="TEST", full_team_name="Test Team")
         result = team.to_dict()
 
         assert isinstance(result, dict)
-        assert result['team_abbreviation'] == "TEST"
-        assert result['full_team_name'] == "Test Team"
+        assert result["team_abbreviation"] == "TEST"
+        assert result["full_team_name"] == "Test Team"
 
 
 class TestIndividualResult:
@@ -145,7 +125,7 @@ class TestIndividualResult:
             distance="50",
             stroke_code="A",
             time="25.50",
-            overall_place="1"
+            overall_place="1",
         )
 
         assert result.mm_athlete_id == "12345"
@@ -180,7 +160,7 @@ class TestIndividualResult:
             time_code="OT",
             backup_time_1="59.51",
             backup_time_2="59.49",
-            reaction_time="0.65"
+            reaction_time="0.65",
         )
 
         assert result.mm_athlete_id == "12345"
@@ -190,17 +170,13 @@ class TestIndividualResult:
 
     def test_individual_result_to_dict(self):
         """Test conversion to dictionary."""
-        result = IndividualResult(
-            mm_athlete_id="123",
-            event_no="5",
-            time="30.00"
-        )
+        result = IndividualResult(mm_athlete_id="123", event_no="5", time="30.00")
         result_dict = result.to_dict()
 
         assert isinstance(result_dict, dict)
-        assert result_dict['mm_athlete_id'] == "123"
-        assert result_dict['event_no'] == "5"
-        assert result_dict['time'] == "30.00"
+        assert result_dict["mm_athlete_id"] == "123"
+        assert result_dict["event_no"] == "5"
+        assert result_dict["time"] == "30.00"
 
 
 class TestRelayResult:
@@ -214,7 +190,7 @@ class TestRelayResult:
             event_no="002",
             distance="200",
             stroke_code="E",
-            time="100.50"
+            time="100.50",
         )
 
         assert result.team_abbr == "ABC"
@@ -233,8 +209,7 @@ class TestRelayResult:
     def test_relay_result_with_athletes(self):
         """Test relay with athlete IDs."""
         result = RelayResult(
-            team_abbr="XYZ",
-            relay_athletes=["101", "102", "103", "104"]
+            team_abbr="XYZ", relay_athletes=["101", "102", "103", "104"]
         )
 
         assert len(result.relay_athletes) == 4
@@ -244,8 +219,7 @@ class TestRelayResult:
     def test_relay_result_with_reaction_times(self):
         """Test relay with reaction times."""
         result = RelayResult(
-            team_abbr="ABC",
-            reaction_times=["0.65", "0.71", "0.68", "0.73"]
+            team_abbr="ABC", reaction_times=["0.65", "0.71", "0.68", "0.73"]
         )
 
         assert len(result.reaction_times) == 4
@@ -263,23 +237,20 @@ class TestRelayResult:
     def test_relay_result_to_dict(self):
         """Test conversion to dictionary."""
         result = RelayResult(
-            team_abbr="TEST",
-            relay_team="B",
-            relay_athletes=["1", "2", "3", "4"]
+            team_abbr="TEST", relay_team="B", relay_athletes=["1", "2", "3", "4"]
         )
         result_dict = result.to_dict()
 
         assert isinstance(result_dict, dict)
-        assert result_dict['team_abbr'] == "TEST"
-        assert result_dict['relay_team'] == "B"
-        assert len(result_dict['relay_athletes']) == 4
+        assert result_dict["team_abbr"] == "TEST"
+        assert result_dict["relay_team"] == "B"
+        assert len(result_dict["relay_athletes"]) == 4
 
     def test_relay_result_partial_athletes(self):
         """Test relay with fewer than 4 athletes."""
         result = RelayResult(
-            team_abbr="ABC",
-            relay_athletes=["101", "102"]  # Only 2 athletes
-        )
+            team_abbr="ABC", relay_athletes=["101", "102"]
+        )  # Only 2 athletes
 
         assert len(result.relay_athletes) == 2
         # This is valid - not all relays must have exactly 4 swimmers

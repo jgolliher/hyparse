@@ -1,5 +1,5 @@
 """Unit tests for checksum validation in hyparse parser."""
-import pytest
+
 from hyparse.parser.hy3_file import Hy3File
 from hyparse.parser.validator import ChecksumValidator
 
@@ -11,7 +11,9 @@ class TestChecksumCalculation:
         """Test basic checksum calculation with known values."""
         # Test line from actual .hy3 file format
         # Format: content + 2-digit checksum at end
-        test_line = "A102                                            MM 8.0     20251101  88"
+        test_line = (
+            "A102                                            MM 8.0     20251101  88"
+        )
 
         # Use the ChecksumValidator directly
         calculated = ChecksumValidator.calculate_checksum(test_line)
@@ -54,22 +56,27 @@ class TestChecksumValidation:
         import tempfile
 
         # Create a file with known valid checksum
-        valid_line = "A102                                            MM 8.0     20251101  88\n"
+        valid_line = (
+            "A102                                            MM 8.0     20251101  88\n"
+        )
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.hy3', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".hy3", delete=False) as f:
             f.write(valid_line)
             temp_path = f.name
 
         try:
             hy3 = Hy3File(temp_path)
             # Check parse_errors for checksum errors
-            checksum_errors = [e for e in hy3.parse_errors if 'checksum' in e[2].lower()]
+            checksum_errors = [
+                e for e in hy3.parse_errors if "checksum" in e[2].lower()
+            ]
 
             # Should be empty if checksum is valid
             # Note: Might have other parse errors, just check no checksum errors
-            assert len([e for e in checksum_errors if 'mismatch' in e[2].lower()]) == 0
+            assert len([e for e in checksum_errors if "mismatch" in e[2].lower()]) == 0
         finally:
             import os
+
             os.unlink(temp_path)
 
     def test_invalid_checksum_detected(self):
@@ -79,19 +86,22 @@ class TestChecksumValidation:
         # Create a line with intentionally wrong checksum
         invalid_line = "A102                                            MM 8.0     20251101  99\n"  # Wrong checksum
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.hy3', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".hy3", delete=False) as f:
             f.write(invalid_line)
             temp_path = f.name
 
         try:
             hy3 = Hy3File(temp_path)
             # Check parse_errors for checksum mismatch
-            checksum_errors = [e for e in hy3.parse_errors if 'checksum mismatch' in e[2].lower()]
+            checksum_errors = [
+                e for e in hy3.parse_errors if "checksum mismatch" in e[2].lower()
+            ]
 
             # Should have at least one checksum error
             assert len(checksum_errors) > 0
         finally:
             import os
+
             os.unlink(temp_path)
 
     def test_checksum_validation_continues_parsing(self):
@@ -104,7 +114,7 @@ class TestChecksumValidation:
             "B1Bad Checksum Meet                                                                                                                           99\n",  # Bad checksum
         ]
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.hy3', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".hy3", delete=False) as f:
             f.writelines(lines)
             temp_path = f.name
 
@@ -117,6 +127,7 @@ class TestChecksumValidation:
             assert len(hy3.raw_lines) == 2
         finally:
             import os
+
             os.unlink(temp_path)
 
 

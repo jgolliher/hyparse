@@ -7,7 +7,7 @@ def hy3_to_csv(file_name: str, output_loc: str):
     file = Hy3File(file_name=file_name)
     meet_name = file.meet_info.meet_name
     print(f"Extracting {meet_name} results")
-    print(f"Extracting individual results")
+    print("Extracting individual results")
     try:
         individual_results = file.individual_results_to_df()
         individual_results.to_csv(

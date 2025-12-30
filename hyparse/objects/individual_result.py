@@ -1,6 +1,7 @@
 """Individual result data model using Pydantic."""
+
 from typing import Optional, Literal
-from pydantic import BaseModel, Field, field_validator, ConfigDict
+from pydantic import BaseModel, field_validator, ConfigDict
 
 
 class IndividualResult(BaseModel):
@@ -46,7 +47,7 @@ class IndividualResult(BaseModel):
     reaction_time: Optional[str] = None
     i_r_flag: str = "I"
 
-    @field_validator("stroke_code", "round", "course", mode='before')
+    @field_validator("stroke_code", "round", "course", mode="before")
     @classmethod
     def uppercase_codes(cls, v):
         """Convert codes to uppercase and handle empty strings."""

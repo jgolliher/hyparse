@@ -1,6 +1,5 @@
 import pandas as pd
 from typing import List, Optional
-import numpy as np
 import math
 
 
@@ -89,6 +88,13 @@ def rank_times(
     # Check if ranking column exists
     if rank_col not in df.columns:
         raise KeyError(f"Ranking column '{rank_col}' not found in DataFrame.")
+
+    # Validate that the ranking column is numeric (skip check for empty DataFrames)
+    if len(df) > 0 and not pd.api.types.is_numeric_dtype(df[rank_col]):
+        raise TypeError(
+            f"Failed to rank column '{rank_col}'. Is it numeric? "
+            f"Column has dtype: {df[rank_col].dtype}"
+        )
 
     # --- Perform Ranking ---
     try:

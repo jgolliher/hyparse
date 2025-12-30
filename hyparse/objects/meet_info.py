@@ -1,6 +1,7 @@
 """Meet information data model using Pydantic."""
+
 from typing import Optional, Literal
-from pydantic import BaseModel, Field, field_validator, ConfigDict
+from pydantic import BaseModel, field_validator, ConfigDict
 
 
 class MeetInfo(BaseModel):
@@ -28,7 +29,7 @@ class MeetInfo(BaseModel):
     mm_version: Optional[str] = None
     date_file_created: Optional[str] = None
 
-    @field_validator("course", mode='before')
+    @field_validator("course", mode="before")
     @classmethod
     def validate_course(cls, v):
         """Validate and normalize course type."""
