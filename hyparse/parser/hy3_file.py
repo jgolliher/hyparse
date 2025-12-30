@@ -8,7 +8,7 @@ from hyparse.objects import MeetInfo, Athlete, Team, IndividualResult, RelayResu
 from hyparse.parser.validator import ChecksumValidator, validate_file_structure
 from hyparse.parser.line_specs import LINE_SPECS
 from hyparse.transformers import IndividualResultTransformer, RelayResultTransformer
-from hyparse.exceptions import ChecksumError, FileFormatError, StructuralError
+from hyparse.exceptions import ChecksumError, FileFormatError
 
 # Use module-level logger instead of configuring root logger
 logger = logging.getLogger(__name__)
@@ -93,7 +93,11 @@ class Hy3File:
             self.parse_errors.extend(checksum_errors)
             logger.warning(
                 f"Checksum errors found in {len(checksum_errors)} line(s). "
-                + ("Raising exception." if self.strict_mode else "Parsing will continue, but results may be inaccurate.")
+                + (
+                    "Raising exception."
+                    if self.strict_mode
+                    else "Parsing will continue, but results may be inaccurate."
+                )
             )
             if self.strict_mode:
                 # Raise the first checksum error
@@ -103,8 +107,8 @@ class Hy3File:
                 raise ChecksumError(
                     line_num=line_num,
                     expected="",  # Would need to parse from error_msg
-                    actual="",    # Would need to parse from error_msg
-                    line=line
+                    actual="",  # Would need to parse from error_msg
+                    line=line,
                 )
 
         # Parse lines in a single pass

@@ -123,13 +123,51 @@ Replace `YOUR_USERNAME` with your GitHub username.
    - Watch your package get published to PyPI!
    - Anyone can now `pip install hyparse`!
 
+## 🪝 Pre-commit Hooks (Recommended)
+
+Automatically run code quality checks before each commit:
+
+```bash
+# Install pre-commit
+pip install pre-commit
+
+# Install the git hooks
+pre-commit install
+
+# (Optional) Run against all files to test
+pre-commit run --all-files
+```
+
+Now, every time you commit, pre-commit will automatically:
+- ✅ Format code with Black
+- ✅ Lint code with Flake8
+- ✅ Check for common issues (trailing whitespace, large files, etc.)
+- ✅ Validate YAML/TOML files
+
+If any hook fails, the commit will be blocked and the issues will be auto-fixed (for formatting) or reported (for linting).
+
+**To bypass hooks** (not recommended):
+```bash
+git commit --no-verify -m "your message"
+```
+
+**To run manually without committing:**
+```bash
+pre-commit run --all-files
+```
+
 ## 🧪 Testing Locally Before Pushing
 
 Run the same checks that GitHub Actions will run:
 
 ```bash
-# Install dev dependencies
+# Install dev dependencies (includes pre-commit)
 pip install -r requirements-dev.txt
+
+# Run pre-commit checks (fastest way to check everything)
+pre-commit run --all-files
+
+# Or run individual tools:
 
 # Run tests
 pytest tests/ -v --cov=hyparse

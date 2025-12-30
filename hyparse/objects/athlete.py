@@ -1,4 +1,5 @@
 """Athlete data model using Pydantic."""
+
 from typing import Optional, Literal
 from pydantic import BaseModel, Field, field_validator, ConfigDict
 

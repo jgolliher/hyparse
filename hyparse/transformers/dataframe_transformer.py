@@ -201,11 +201,11 @@ class IndividualResultTransformer(DataFrameTransformer):
         # Add stroke names
         df = self._add_stroke_names(df)
 
-        # Calculate seed rankings
-        df = self._calculate_seed_ranks(df)
-
-        # Format time columns
+        # Format time columns (must be done before calculating ranks)
         df = self._format_time_columns(df)
+
+        # Calculate seed rankings (requires numeric seed_time)
+        df = self._calculate_seed_ranks(df)
 
         # Add meet info
         df = self._add_meet_info(df)
@@ -298,11 +298,11 @@ class RelayResultTransformer(DataFrameTransformer):
         # Add stroke names
         df = self._add_stroke_names(df)
 
-        # Calculate seed rankings
-        df = self._calculate_seed_ranks(df)
-
-        # Format time columns
+        # Format time columns (must be done before calculating ranks)
         df = self._format_time_columns(df)
+
+        # Calculate seed rankings (requires numeric seed_time)
+        df = self._calculate_seed_ranks(df)
 
         # Add meet info
         df = self._add_meet_info(df)
