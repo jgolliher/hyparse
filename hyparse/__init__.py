@@ -18,7 +18,7 @@ from .exceptions import (
 )
 from .utils import ss_to_display, rank_times
 
-__version__ = "0.2.0"  # Updated version after refactor
+__version__ = "0.3.0"  # Updated version after refactor
 
 __all__ = [
     # Core parser and data models
