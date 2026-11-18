@@ -1,55 +1,55 @@
-# Expose main classes and version
-from .objects import MeetInfo, Athlete, Team, IndividualResult, RelayResult
-from .parser import Hy3File
-from .parser.validator import ChecksumValidator, validate_file_structure
-from .parser.line_specs import LINE_SPECS, STROKE_CODES, COURSE_CODES, ROUND_CODES
-from .transformers import (
-    DataFrameTransformer,
-    IndividualResultTransformer,
-    RelayResultTransformer,
-)
-from .exceptions import (
-    Hy3ParseError,
-    ChecksumError,
-    InvalidLineError,
-    MissingDataError,
-    StructuralError,
-    FileFormatError,
-)
-from .utils import ss_to_display, rank_times
+"""hyparse: read HyTek swim meet files (.hy3 entries/results, .ev3 and .hyv event files)."""
 
-__version__ = "0.3.0"  # Updated version after refactor
+from hyparse._values import format_time
+from hyparse.checksum import hy3_checksum
+from hyparse.events import read_ev3, read_hyv
+from hyparse.exceptions import ChecksumError, FileFormatError, HyparseError
+from hyparse.hy3 import read_hy3
+from hyparse.models import (
+    Athlete,
+    Contact,
+    EntryLimits,
+    Event,
+    EventFile,
+    FileInfo,
+    Hy3File,
+    IndividualEntry,
+    IndividualResult,
+    Meet,
+    ParseIssue,
+    RelayEntry,
+    RelayLeg,
+    RelayResult,
+    Seeding,
+    Team,
+)
+
+__version__ = "0.4.0"
 
 __all__ = [
-    # Core parser and data models
-    "Hy3File",
-    "MeetInfo",
+    "read_hy3",
+    "read_ev3",
+    "read_hyv",
     "Athlete",
-    "Team",
+    "Contact",
+    "EntryLimits",
+    "Event",
+    "EventFile",
+    "FileInfo",
+    "Hy3File",
+    "IndividualEntry",
     "IndividualResult",
+    "Meet",
+    "ParseIssue",
+    "RelayEntry",
+    "RelayLeg",
     "RelayResult",
-    # Validators
-    "ChecksumValidator",
-    "validate_file_structure",
-    # Transformers
-    "DataFrameTransformer",
-    "IndividualResultTransformer",
-    "RelayResultTransformer",
-    # Exceptions
-    "Hy3ParseError",
-    "ChecksumError",
-    "InvalidLineError",
-    "MissingDataError",
-    "StructuralError",
+    "Seeding",
+    "Team",
+    "HyparseError",
     "FileFormatError",
-    # Utilities
-    "ss_to_display",
-    "rank_times",
-    # Constants
-    "LINE_SPECS",
-    "STROKE_CODES",
-    "COURSE_CODES",
-    "ROUND_CODES",
-    # Version
+    "ChecksumError",
+    "format_time",
+    "hy3_checksum",
     "__version__",
 ]

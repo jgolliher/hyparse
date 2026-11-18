@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ['3.9', '3.10', '3.11', '3.12']
+        python-version: ['3.10', '3.11', '3.12', '3.13']
 
     steps:
     - name: Checkout code
@@ -32,20 +32,47 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements-dev.txt
+        pip install -e ".[dev]"
 
     - name: Run tests with pytest
       run: |
         pytest tests/ -v --cov=hyparse --cov-report=xml --cov-report=term
 
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
-      if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+  coverage-badge:
+    name: Coverage Badge
+    runs-on: ubuntu-latest
+    needs: [test]
+    # Only update the committed badge on direct pushes to main (not PRs).
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
       with:
-        file: ./coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
+        python-version: '3.12'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
+
+    - name: Run tests with coverage
+      run: pytest tests/ --cov=hyparse --cov-report=xml
+
+    - name: Generate coverage badge
+      run: genbadge coverage -i coverage.xml -o coverage.svg
+
+    - name: Commit updated badge
+      uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: "chore: update coverage badge [skip ci]"
+        file_pattern: coverage.svg
 
   lint:
     name: Lint and Format Check
@@ -64,8 +91,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install black flake8 mypy
-        pip install -r requirements.txt
+        pip install -e ".[dev]"
 
     - name: Check formatting with black
       run: |

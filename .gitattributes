@@ -6,6 +6,11 @@
 
 # Test data files - keep original line endings
 *.hy3 text eol=crlf
+*.HY3 text eol=crlf
+*.ev3 text eol=crlf
+*.hyv text eol=crlf
+*.cl2 text eol=crlf
+*.CL2 text eol=crlf
 
 # Shell scripts
 *.sh text eol=lf
