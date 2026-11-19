@@ -68,11 +68,27 @@ jobs:
     - name: Generate coverage badge
       run: genbadge coverage -i coverage.xml -o coverage.svg
 
-    - name: Commit updated badge
-      uses: stefanzweifel/git-auto-commit-action@v5
-      with:
-        commit_message: "chore: update coverage badge [skip ci]"
-        file_pattern: coverage.svg
+    # main only accepts changes through pull requests, so the badge lives on
+    # its own `badges` branch and the README points there.
+    - name: Publish badge to badges branch
+      run: |
+        mv coverage.svg "$RUNNER_TEMP/coverage.svg"
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        if git ls-remote --exit-code --heads origin badges > /dev/null; then
+          git fetch --depth=1 origin badges:refs/remotes/origin/badges
+          git switch -c badges origin/badges
+        else
+          git switch --orphan badges
+        fi
+        cp "$RUNNER_TEMP/coverage.svg" coverage.svg
+        git add coverage.svg
+        if git diff --cached --quiet; then
+          echo "Badge unchanged"
+          exit 0
+        fi
+        git commit -m "chore: update coverage badge [skip ci]"
+        git push origin badges
 
   lint:
     name: Lint and Format Check

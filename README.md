@@ -1,7 +1,7 @@
 # hyparse
 
 [![CI](https://github.com/jgolliher/hyparse/actions/workflows/ci.yml/badge.svg)](https://github.com/jgolliher/hyparse/actions/workflows/ci.yml)
-![Coverage](./coverage.svg)
+![Coverage](https://raw.githubusercontent.com/jgolliher/hyparse/badges/coverage.svg)
 
 Read HyTek swim meet files into typed Python objects, and write `.hy3` entries files.
 
