@@ -11,6 +11,7 @@ How entry and result lines pair up:
 * An ``E2`` / ``F2`` after it with a *blank* time is a pre-assigned heat/lane in an entry file
   (dual meets), not a result.
 * ``F3`` lists the relay swimmers and their legs (up to 8).
+* ``G1`` lines right after a result ``E2`` / ``F2`` hold its cumulative splits.
 """
 
 from datetime import datetime
@@ -34,6 +35,7 @@ from hyparse.models import (
     RelayLeg,
     RelayResult,
     Seeding,
+    Split,
     Team,
 )
 
@@ -66,6 +68,7 @@ LINE_SPECS: Dict[str, Dict[str, Span]] = {
         "name": (7, 37),
         "short_name": (37, 53),
         "lsc": (53, 55),
+        "team_type": (119, 122),
     },
     "C2": {
         "name": (2, 32),
@@ -74,6 +77,7 @@ LINE_SPECS: Dict[str, Dict[str, Span]] = {
         "state": (92, 94),
         "postal_code": (94, 104),
         "country": (104, 107),
+        "registration": (108, 112),
     },
     "C3": {
         "email": (92, 128),
@@ -89,6 +93,7 @@ LINE_SPECS: Dict[str, Dict[str, Span]] = {
         "birth_date": (88, 96),
         "age": (97, 99),
         "class_year": (99, 101),
+        "flag": (111, 112),
         "citizenship": (112, 115),
     },
     "E1": {
@@ -104,6 +109,7 @@ LINE_SPECS: Dict[str, Dict[str, Span]] = {
         "seed_time_2": (52, 59),
         "seed_course_2": (59, 60),
         "exhibition": (83, 84),
+        "seed_flag": (91, 92),
     },
     "E2": {
         "round": (2, 3),
@@ -159,6 +165,13 @@ LINE_SPECS: Dict[str, Dict[str, Span]] = {
 F3_SLOTS = 8
 F3_SLOT_WIDTH = 13
 F3_FIRST_SLOT = 2
+RELAY_SWIMMERS = 4  # legs 5-8 on F3 are alternates
+
+# G1: up to 11 split slots of 11 characters starting at column 2.
+# Within a slot: round [0], split number [1:3], cumulative time [3:11] (0.00 = no touch).
+G1_SLOTS = 11
+G1_SLOT_WIDTH = 11
+G1_FIRST_SLOT = 2
 
 
 def fields(line: str, line_code: str) -> Dict[str, str]:
@@ -195,6 +208,7 @@ class _Hy3Reader:
         self.team: Optional[Team] = None
         self.pending_e1: Optional[Dict[str, Any]] = None
         self.pending_f1: Optional[Dict[str, Any]] = None
+        self.splits: Optional[List[Split]] = None  # where G1 lines go: the latest result
 
     def read(self) -> Hy3File:
         if not self.lines or not self.lines[0].startswith("A1"):
@@ -205,9 +219,13 @@ class _Hy3Reader:
                 continue
             self._check_line(number, line)
             handler = getattr(self, f"_line_{line[:2]}", None)
-            if handler:  # Other codes (G1 splits, H1 DQ text, D2-D7, ...) are skipped.
+            if handler:  # Other codes (H1 DQ text, D2-D7, ...) are skipped.
                 handler(number, line)
         self._flush()
+        for result in self.results + self.relay_results:
+            _set_split_distances(result.distance, result.splits)
+        for relay in self.relay_results:
+            _set_split_legs(relay.distance, relay.splits)
 
         return Hy3File(
             path=self.path,
@@ -287,6 +305,7 @@ class _Hy3Reader:
             name=v.text(f["name"]),
             short_name=v.text(f["short_name"]),
             lsc=v.text(f["lsc"]),
+            team_type=v.text(f["team_type"]),
         )
         self.teams.append(self.team)
 
@@ -302,6 +321,7 @@ class _Hy3Reader:
         contact.postal_code = v.text(f["postal_code"])
         contact.country = v.text(f["country"])
         self.team.contact = contact
+        self.team.registration = v.text(f["registration"])
 
     def _line_C3(self, number: int, line: str) -> None:
         if self.team is None:
@@ -332,6 +352,7 @@ class _Hy3Reader:
                 birth_date=v.mmddyyyy(f["birth_date"]),
                 age=v.integer(f["age"]),
                 class_year=v.text(f["class_year"]),
+                flag=v.text(f["flag"]),
                 citizenship=v.text(f["citizenship"]),
             )
         )
@@ -347,6 +368,7 @@ class _Hy3Reader:
             "team_code": self.team.code if self.team else None,
             "team_athlete_id": f["team_athlete_id"],
             "exhibition": f["exhibition"] == "X",
+            "seed_flag": v.text(f["seed_flag"]),
         }
 
     def _line_E2(self, number: int, line: str) -> None:
@@ -358,9 +380,9 @@ class _Hy3Reader:
         if not f["time"]:
             self.entries.append(IndividualEntry(**entry, seeding=_seeding(f)))
             return
-        self.results.append(
-            IndividualResult(**entry, **_swim(f), reaction_time=v.time(f["reaction_time"]))
-        )
+        result = IndividualResult(**entry, **_swim(f), reaction_time=v.time(f["reaction_time"]))
+        self.results.append(result)
+        self.splits = result.splits
 
     # --- relays -----------------------------------------------------------------------------
 
@@ -377,6 +399,7 @@ class _Hy3Reader:
             },
             "f2": None,
             "legs": [],
+            "splits": [],
         }
 
     def _line_F2(self, number: int, line: str) -> None:
@@ -384,6 +407,7 @@ class _Hy3Reader:
             self._issue(number, line, "F2 line without a preceding F1 line")
             return
         self.pending_f1["f2"] = fields(line, "F2")
+        self.splits = self.pending_f1["splits"]
 
     def _line_F3(self, number: int, line: str) -> None:
         if self.pending_f1 is None:
@@ -404,16 +428,31 @@ class _Hy3Reader:
                 )
             )
 
+    # --- splits ---------------------------------------------------------------------------
+
+    def _line_G1(self, number: int, line: str) -> None:
+        if self.splits is None:
+            self._issue(number, line, "G1 line without a preceding result line")
+            return
+        for slot in range(G1_SLOTS):
+            start = G1_FIRST_SLOT + slot * G1_SLOT_WIDTH
+            chunk = line[start : start + G1_SLOT_WIDTH]
+            split_number = v.positive_int(chunk[1:3].strip())
+            if split_number is None:
+                continue
+            self.splits.append(Split(number=split_number, time=v.time(chunk[3:].strip())))
+
     # --- finishing pending records ----------------------------------------------------------
 
     def _flush(self) -> None:
         """Close any E1/F1 record still waiting for its follow-up lines."""
+        self.splits = None
         if self.pending_e1 is not None:
             self.entries.append(IndividualEntry(**self.pending_e1))
             self.pending_e1 = None
         if self.pending_f1 is not None:
             relay, self.pending_f1 = self.pending_f1, None
-            entry, f2, legs = relay["entry"], relay["f2"], relay["legs"]
+            entry, f2, legs, splits = relay["entry"], relay["f2"], relay["legs"], relay["splits"]
             if f2 is None:
                 self.relay_entries.append(RelayEntry(**entry, legs=legs))
             elif not f2["time"]:
@@ -421,7 +460,9 @@ class _Hy3Reader:
             else:
                 reactions = [v.time(f2[f"reaction_time_{i}"]) for i in range(1, 5)]
                 self.relay_results.append(
-                    RelayResult(**entry, **_swim(f2), legs=legs, reaction_times=reactions)
+                    RelayResult(
+                        **entry, **_swim(f2), legs=legs, reaction_times=reactions, splits=splits
+                    )
                 )
 
 
@@ -432,6 +473,7 @@ def _event_ref(f: Dict[str, str]) -> Dict[str, Any]:
         "event_number": v.integer(f["event_number"]),
         "event_gender": normalize_gender(f["event_gender"]),
         "distance": None if is_dive else v.integer(f["distance"]),
+        "num_dives": v.integer(f["distance"]) if is_dive else None,
         "stroke": v.text(f["stroke"]),
         "low_age": v.integer(f["low_age"]),
         "high_age": v.integer(f["high_age"]),
@@ -467,3 +509,22 @@ def _swim(f: Dict[str, str]) -> Dict[str, Any]:
         "points": v.number(f["points"]),
         "swim_date": v.mmddyyyy(f["swim_date"]),
     }
+
+
+def _set_split_distances(distance: Optional[int], splits: List[Split]) -> None:
+    """The last split is the finish, so each split covers ``distance * number / last``."""
+    if not distance or not splits:
+        return
+    last = splits[-1].number
+    for split in splits:
+        covered, remainder = divmod(distance * split.number, last)
+        split.distance = covered if remainder == 0 else None
+
+
+def _set_split_legs(distance: Optional[int], splits: List[Split]) -> None:
+    """Each relay swimmer covers a quarter of the distance; a split at a leg's end belongs to it."""
+    if not distance:
+        return
+    for split in splits:
+        if split.distance:
+            split.leg = -(-split.distance * RELAY_SWIMMERS // distance)  # ceiling division

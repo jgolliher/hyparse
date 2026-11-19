@@ -2,7 +2,7 @@
 
 > Name: **Deckside** (chosen 2026-11-18; availability of domain/GitHub org not yet checked).
 > Status: planning. This doc moves to the new app repo once it exists.
-> Source notes: `webapp_context.md`, Team Manager screenshots in `screenshots/`, sample files in `data/other/` and `data/hy3/`.
+> Source notes: `planning/webapp_context.md`, Team Manager screenshots in `planning/screenshots/`, sample files in `data/entries/`, `data/events/` and `data/results/`.
 
 ## 1. What we're building
 
@@ -39,9 +39,43 @@ Two repos:
 | Repo | Responsibility | Has a DB? |
 |---|---|---|
 | **hyparse** (existing) | Read and write HyTek and SDIF files. Returns format-neutral Python objects. | No |
-| **New app** | Django web app: database, ETL, identity resolution, meet matching, UI, auth, export. Depends on hyparse via a pinned git tag (PyPI later). | Yes |
+| **New app** | Django web app: database, ETL, identity resolution, meet matching, UI, auth, export. Depends on hyparse (see below). | Yes |
 
 See `hyparse_changes.md` for what the library needs.
+
+### Using hyparse from Deckside
+
+**For now: a local, editable path dependency.** Both repos are still changing, so Deckside uses the hyparse checkout on disk. An edit in hyparse shows up in Deckside right away, with no release or reinstall. Keep the two repos side by side:
+
+```
+Repos/
+  hyparse/
+  deckside/
+```
+
+In `deckside/pyproject.toml`:
+
+```toml
+[project]
+dependencies = [
+    "hyparse",
+    # ...
+]
+
+[tool.uv.sources]
+hyparse = { path = "../hyparse", editable = true }
+```
+
+Then `uv sync` in `deckside/`. Don't add pandas: Deckside uses hyparse's models directly, not `hyparse[pandas]`.
+
+**Later: pin a release.** Before Deckside runs anywhere but this machine (CI or a server), push hyparse, tag a release and switch the source to the tag:
+
+```toml
+[tool.uv.sources]
+hyparse = { git = "https://github.com/jgolliher/hyparse", tag = "v0.4.0" }
+```
+
+Until then, Deckside's CI can't install hyparse, so its CI either checks out both repos or waits for the tag.
 
 ### Stack
 
@@ -182,7 +216,7 @@ Meet Manager accepts either format, but they don't carry the same data:
 - So: **`.hy3` export is required for dual meets**, and `.cl2` is fine for invitationals.
 - `.hy3` lines end with a 2-digit checksum; the algorithm is known and verified against every sample line (`hyparse.hy3_checksum`). `.cl2` has a published spec, but its trailing per-record characters (`N21`, `N98`) still need checking.
 - Build order: `.hy3` writer first (covers every meet type), `.cl2` second.
-- Acceptance tests: export the sample entries and diff against both pairs of files in `data/other/` (Invitational 2026 and Louisville 2023).
+- Acceptance tests: export the sample entries and diff against both pairs of files in `data/entries/` (Invitational 2026 and Louisville 2023).
 
 ## 9. File format catalog
 
@@ -192,7 +226,7 @@ Meet Manager accepts either format, but they don't carry the same data:
 | `.hyv` | `Meet Events-…-002.hyv` | Host → team | Simpler event list, `;`-separated. Team Manager loads either this or `.ev3`, so support both. | Read ✅ |
 | `.hy3` entries | `TENN-SE-Entries-…-001.HY3` | Team → host | Fixed width; A1, B1, B2, C1–C3, D1, E1, F1, F3, plus **E2/F2 with heat/lane and no time** when pre-seeded (dual meets) | Read ✅ (write planned) |
 | `.cl2` (SDIF v3) | `TENN-SE-Entries-…-001.CL2` | Team → host | Fixed width; A0, B1, C1, D0, D3, E0, F0, Z0 | Not supported |
-| `.hy3` results | `data/hy3/*.hy3` | Host → team | Entries lines + E2/F2 results (+ G splits, not parsed yet) | Read ✅ |
+| `.hy3` results | `data/results/*.hy3` | Host → team | Entries lines + E2/F2 results (+ G splits, not parsed yet) | Read ✅ |
 
 `.ev3` field notes (corrections to `webapp_context.md`):
 - Field 5 is `I`/`R` (individual/relay). Gender is field 6.
@@ -212,9 +246,9 @@ Meet Manager accepts either format, but they don't carry the same data:
 
 | Phase | Goal | Done when |
 |---|---|---|
-| 0. hyparse update | Library reads entries, events and SDIF | Parses every file in `data/other` and `data/hy3` into the neutral model; tests pass |
+| 0. hyparse update | Library reads entries, events and SDIF | Parses every file in `data/` into the neutral model; tests pass |
 | 1. App skeleton | Django project, Postgres via `DATABASE_URL`, auth, teams, theming | A Tennessee coach can register by invite, log in and see the orange/grey theme |
-| 2. Results ETL | Load `.hy3` results with athlete resolution and meet matching | All `data/hy3` files load; re-import is a no-op; duplicates land in the review queue |
+| 2. Results ETL | Load `.hy3` results with athlete resolution and meet matching | All `data/results` files load; re-import is a no-op; duplicates land in the review queue |
 | 3. Admin cleanup | Review queue + athlete/meet merge with undo | Admin can merge two athletes and undo it |
 | 4. Events import + entries UI | Load `.ev3`/`.hyv`, entries matrix, relay builder, seeds | A coach can enter the 2026 Tennessee Invitational in the app |
 | 5. Entries export | `.hy3` (then `.cl2`) export, including heat/lane | Export matches both sample entry pairs closely enough that Meet Manager accepts it |

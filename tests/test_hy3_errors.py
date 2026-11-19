@@ -41,6 +41,13 @@ def test_orphan_e2_is_reported(write_file):
     assert any("without a preceding E1" in i.message for i in issues)
 
 
+def test_orphan_g1_is_reported(write_file):
+    lines = real_lines()
+    lines.insert(5, "G1F 2   24.90" + " " * 115 + "00")
+    issues = read_hy3(write_file(lines)).issues
+    assert any("G1 line without a preceding result" in i.message for i in issues)
+
+
 def test_not_a_hy3_file(write_file):
     with pytest.raises(FileFormatError, match="A1"):
         read_hy3(write_file(["B1 nope"]))

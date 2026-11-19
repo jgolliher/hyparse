@@ -46,7 +46,7 @@ def _decorate(hy3: Hy3File, records: List[Dict[str, Any]]) -> "pd.DataFrame":
 
 
 def results_df(hy3: Hy3File) -> "pd.DataFrame":
-    rows = _with_athlete(hy3, [r.model_dump() for r in hy3.results])
+    rows = _with_athlete(hy3, [r.model_dump(exclude={"splits"}) for r in hy3.results])
     return _decorate(hy3, rows)
 
 
@@ -65,10 +65,42 @@ def entries_df(hy3: Hy3File) -> "pd.DataFrame":
 def relay_results_df(hy3: Hy3File) -> "pd.DataFrame":
     rows = []
     for r in hy3.relay_results:
-        row = r.model_dump(exclude={"legs", "reaction_times"})
+        row = r.model_dump(exclude={"legs", "reaction_times", "splits"})
         for leg in r.legs:
             row[f"leg_{leg.leg}_athlete_id"] = leg.team_athlete_id
         for i, reaction in enumerate(r.reaction_times, start=1):
             row[f"leg_{i}_reaction_time"] = reaction
         rows.append(row)
     return _decorate(hy3, rows)
+
+
+def splits_df(hy3: Hy3File) -> "pd.DataFrame":
+    """One row per split, individual and relay.
+
+    A swim is identified by ``(team_code, team_athlete_id, event_number, round)`` for
+    individual results and ``(team_code, relay_letter, event_number, round)`` for relays;
+    the same columns are in ``results_df`` / ``relay_results_df`` to join on. Relay rows also
+    carry the ``leg`` and the ``leg_athlete_id`` of the swimmer on that leg.
+    """
+    rows = []
+    swims = [("individual", r) for r in hy3.results] + [("relay", r) for r in hy3.relay_results]
+    for kind, r in swims:
+        swimmers = {leg.leg: leg.team_athlete_id for leg in getattr(r, "legs", [])}
+        for split in r.splits:
+            rows.append(
+                {
+                    "kind": kind,
+                    "team_code": r.team_code,
+                    "team_athlete_id": getattr(r, "team_athlete_id", None),
+                    "relay_letter": getattr(r, "relay_letter", None),
+                    "event_number": r.event_number,
+                    "round": r.round,
+                    "split_number": split.number,
+                    "split_distance": split.distance,
+                    "split_time": split.time,
+                    "split_display": format_time(split.time),
+                    "leg": split.leg,
+                    "leg_athlete_id": swimmers.get(split.leg) if split.leg else None,
+                }
+            )
+    return _pandas().DataFrame(rows)

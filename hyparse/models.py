@@ -71,6 +71,8 @@ class Team(_Model):
     name: Optional[str] = None
     short_name: Optional[str] = None
     lsc: Optional[str] = None
+    team_type: Optional[str] = None  # C1: COL, AGE, HS, MAS, OTH, REC
+    registration: Optional[str] = None  # C2: governing body, e.g. USS (USA Swimming)
     contact: Optional[Contact] = None
 
 
@@ -87,6 +89,9 @@ class Athlete(_Model):
     age: Optional[int] = None
     class_year: Optional[str] = None
     citizenship: Optional[str] = None
+    # D1 column 111: 'X' on some athletes in Team Manager entry files. Meaning unknown; kept
+    # so a file can be written back unchanged.
+    flag: Optional[str] = None
 
 
 class Event(_Model):
@@ -122,6 +127,7 @@ class _EventRef(_Model):
     stroke: Optional[str] = None
     low_age: Optional[int] = None
     high_age: Optional[int] = None
+    num_dives: Optional[int] = None  # diving: written where swims have the distance
 
     @property
     def discipline(self) -> Optional[Discipline]:
@@ -157,10 +163,29 @@ class IndividualEntry(_EventRef):
     seed_course: Optional[Course] = None
     exhibition: bool = False
     seeding: Optional[Seeding] = None
+    # E1 column 91: 'C' on some Team Manager seeds, perhaps a corrected or converted time.
+    # Meaning unconfirmed; kept so a file can be written back unchanged.
+    seed_flag: Optional[str] = None
+
+
+class Split(_Model):
+    """One cumulative split (``G1`` line) of a result.
+
+    ``number`` is the split slot as written by Meet Manager. Its scale varies between meets
+    (e.g. a 200 can be written as 2/4/6/8 or 1/2/3/4), so ``distance`` is derived from it as
+    ``event distance * number / last number``. ``time`` is ``None`` when no touch was recorded.
+    ``leg`` is the relay leg (1-4) the split falls in; ``None`` for individual results.
+    """
+
+    number: int
+    distance: Optional[int] = None
+    time: Optional[float] = None
+    leg: Optional[int] = None
 
 
 class IndividualResult(_SwimFields, IndividualEntry):
     reaction_time: Optional[float] = None
+    splits: List[Split] = Field(default_factory=list)
 
 
 class RelayLeg(_Model):
@@ -181,6 +206,7 @@ class RelayEntry(_EventRef):
 
 class RelayResult(_SwimFields, RelayEntry):
     reaction_times: List[Optional[float]] = Field(default_factory=list)
+    splits: List[Split] = Field(default_factory=list)
 
 
 class ParseIssue(_Model):

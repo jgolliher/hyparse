@@ -19,14 +19,15 @@ hyparse stays a standalone, database-free library that **reads and writes** HyTe
 - [x] **`.hyv` reader**. Stroke digits 1–5 = A–E, 6 = diving with the board in the distance field (1 → 1m, 3 → 3m, 2 → platform). Its events match the `.ev3` exactly for both sample meets.
 - [x] Checksum is known and verified on every sample line (`hy3_checksum`). Strict mode raises; default collects `issues`.
 - [x] pandas is now optional (`hyparse[pandas]`, `hyparse.dataframes`). Python 3.10+.
-- [x] Tests run against every file in `data/hy3` and `data/other`.
+- [x] Tests run against every file in `data/`.
 
 ## Remaining
 
-- [ ] **`.hy3` writer** (entries): required for dual meets because only `.hy3` carries heat/lane. Acceptance: reproduce both sample entry `.HY3` files byte-for-byte from their parsed model. Fields we don't model yet (E1 col 91 `C`, D1 col 101 `*`, D1 col 85–87, B2 bits) must round-trip, so the writer may need to keep the raw line or model those fields.
+- [x] **`.hy3` writer** (entries), `write_hy3()` in `hyparse/hy3_writer.py`. Both sample entry files are reproduced byte for byte from their parsed model. New model fields to make that possible: `Team.team_type` (C1 119–121, `COL`), `Team.registration` (C2 108–111, `USS`), `Athlete.flag` (D1 111, `X`, meaning unknown), `IndividualEntry.seed_flag` (E1 91, `C`, maybe corrected/converted), and `num_dives` on entries and results (the dive count in the distance column). Derived or constant on write: D1 101 `*` (citizenship set and not USA), B2 fee/`O`, the E1/F1 fee and seed slot 1, F1 col 11–12, F3 slot `F`. Not yet checked: that Meet Manager imports a file hyparse wrote from scratch.
 - [ ] **`.cl2` (SDIF v3) reader + writer**: A0, B1, C1, D0, D3, E0, F0, Z0. Implement from the published spec. Acceptance: reproduce both sample `.CL2` files.
-- [ ] Split times (G1 lines) and DQ descriptions (H1) in results, if the app wants them.
-- [ ] Tag a release the app can pin (`v0.4.0`), and consider PyPI later.
+- [x] Split times (G1 lines): `IndividualResult.splits` / `RelayResult.splits`, `splits_df`.
+- [ ] DQ descriptions (H1) in results, if the app wants them.
+- [ ] Tag a release the app can pin (`v0.4.0`), and consider PyPI later. Not urgent: Deckside starts with a local editable path dependency on this checkout (see `app_plan.md` §2). Needed before Deckside's CI or a deploy.
 
 ## Unknown fields worth asking about
 
