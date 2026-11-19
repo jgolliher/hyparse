@@ -1,55 +1,18 @@
-"""Custom exceptions for hyparse package."""
+"""Exceptions raised by hyparse readers."""
 
 
-class Hy3ParseError(Exception):
-    """Base exception for .hy3 parsing errors."""
-
-    pass
+class HyparseError(Exception):
+    """Base class for all hyparse errors."""
 
 
-class ChecksumError(Hy3ParseError):
-    """Raised when checksum validation fails."""
+class FileFormatError(HyparseError):
+    """The file is not the format it claims to be, or a line has an unexpected shape."""
 
-    def __init__(self, line_num: int, expected: str, actual: str, line: str = ""):
-        self.line_num = line_num
-        self.expected = expected
-        self.actual = actual
-        self.line = line
-        super().__init__(f"Line {line_num}: Checksum mismatch. Expected {expected}, got {actual}")
+    def __init__(self, message: str, line_number: int | None = None):
+        self.line_number = line_number
+        prefix = f"Line {line_number}: " if line_number is not None else ""
+        super().__init__(prefix + message)
 
 
-class InvalidLineError(Hy3ParseError):
-    """Raised when a line cannot be parsed."""
-
-    def __init__(self, line_num: int, line_id: str, message: str):
-        self.line_num = line_num
-        self.line_id = line_id
-        super().__init__(f"Line {line_num} ({line_id}): {message}")
-
-
-class MissingDataError(Hy3ParseError):
-    """Raised when required data is missing."""
-
-    def __init__(self, field_name: str, line_num: int = None):
-        self.field_name = field_name
-        self.line_num = line_num
-        msg = f"Missing required field: {field_name}"
-        if line_num:
-            msg = f"Line {line_num}: {msg}"
-        super().__init__(msg)
-
-
-class StructuralError(Hy3ParseError):
-    """Raised when file structure is invalid (e.g., E2 without E1)."""
-
-    def __init__(self, message: str, line_num: int = None):
-        self.line_num = line_num
-        if line_num:
-            message = f"Line {line_num}: {message}"
-        super().__init__(message)
-
-
-class FileFormatError(Hy3ParseError):
-    """Raised when file format is invalid or corrupted."""
-
-    pass
+class ChecksumError(FileFormatError):
+    """A .hy3 line's checksum doesn't match its content (strict mode only)."""

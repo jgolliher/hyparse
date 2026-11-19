@@ -1,10 +1,50 @@
 [build-system]
-requires = ["setuptools>=45", "wheel"]
+requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "hyparse"
+description = "Read HyTek swim meet files: .hy3 entries and results, .ev3 and .hyv event files"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "John Golliher", email = "jwgollihe@gmail.com" }]
+dependencies = [
+    "pydantic>=2.0.0",
+]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://github.com/jgolliher/hyparse"
+
+[project.optional-dependencies]
+pandas = ["pandas>=2.2.0"]
+dev = [
+    "pandas>=2.2.0",
+    # Testing
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    # Code quality
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.5.0",
+    "pandas-stubs>=2.0.0",  # Type stubs for pandas
+    "genbadge[coverage]>=1.1.0",  # Generates the coverage.svg badge in CI
+    # Development tools
+    "ipykernel>=6.25.0",
+    "jupyterlab>=4.0.0",
+    "notebook>=7.0.0",
+    "pre-commit>=3.5.0",
+]
+
+[tool.setuptools.dynamic]
+version = { attr = "hyparse.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["hyparse*"]
 
 [tool.black]
 line-length = 100
-target-version = ['py39', 'py310', 'py311', 'py312']
+target-version = ['py310', 'py311', 'py312']
 include = '\.pyi?$'
 extend-exclude = '''
 /(
@@ -25,7 +65,7 @@ profile = "black"
 line_length = 100
 
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.10"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false
@@ -44,6 +84,10 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = "numpy.*"
 ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--strict-markers --cov=hyparse --cov-report=term-missing"
 
 [tool.coverage.run]
 source = ["hyparse"]

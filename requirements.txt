@@ -1,3 +1,0 @@
-# Production dependencies
-pandas>=2.2.0
-pydantic>=2.0.0
