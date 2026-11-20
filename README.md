@@ -3,7 +3,8 @@
 [![CI](https://github.com/jgolliher/hyparse/actions/workflows/ci.yml/badge.svg)](https://github.com/jgolliher/hyparse/actions/workflows/ci.yml)
 ![Coverage](https://raw.githubusercontent.com/jgolliher/hyparse/badges/coverage.svg)
 
-Read HyTek swim meet files into typed Python objects, and write `.hy3` entries files.
+Read HyTek swim meet files into typed Python objects, and write `.hy3` entries and `.rec`
+records files.
 
 | Format | What it is | Who sends it | Read | Write |
 |---|---|---|---|---|
@@ -11,6 +12,7 @@ Read HyTek swim meet files into typed Python objects, and write `.hy3` entries f
 | `.hy3` (type 07) | Meet results | Meet host → teams | ✅ | — |
 | `.ev3` | Event list + entry limits | Meet host → teams | ✅ | — |
 | `.hyv` | Event list (simpler) | Meet host → teams | ✅ | — |
+| `.rec` | Records (NCAA, American, pool, meet, ...) | Meet Manager | ✅ | ✅ |
 | `.cl2` (SDIF v3) | Meet entries | Team → meet host | planned | planned |
 
 hyparse has no database code. It turns files into objects, and entry objects back into files.
@@ -53,6 +55,14 @@ read_hyv("...hyv")        # same shape; no entry limits or sessions
 # Write an entries file (A1 type 02): build or edit an Hy3File, then
 from hyparse import write_hy3
 text = write_hy3(entries, "out.hy3")  # CRLF lines, Latin-1, checksums filled in
+
+# Records files (.rec): one 120-byte row per record, times stored as binary floats
+from hyparse import read_rec, write_rec
+recs = read_rec("data/records/NCAA-y.rec")
+recs.name, recs.course  # ("NCAA", "Y")
+recs.records[0]         # Record(gender, distance, stroke, is_relay, time, name, team, swim_date, ...)
+recs.current()          # the standing record per event: repeats and broken records dropped
+write_rec(recs, "out.rec")  # same bytes as Meet Manager's file
 ```
 
 Reading a Team Manager entry file and writing it back gives the same bytes (checked for both
@@ -71,7 +81,11 @@ Conventions:
 - Genders are normalized to `F` / `M` / `X`. Stroke codes: `A` free, `B` back, `C` breast, `D` fly,
   `E` medley/IM, `F` 1m, `G` 3m, `H` platform. Diving rows have `distance=None`.
 - `read_hy3(path, strict=True)` raises on the first problem instead of collecting `issues`.
-  Event readers always raise `FileFormatError` (naming the line) on unexpected structure.
+  Event and records readers always raise `FileFormatError` (naming the line) on unexpected
+  structure.
+- Records files keep every row, including repeats and records since broken (so a file writes
+  back unchanged); `RecordFile.current()` gives the standing records. Relay records put the
+  team in `team` and the swimmers, as the file writes them, in `relay_swimmers`.
 
 ### DataFrames / CSV
 
@@ -94,4 +108,4 @@ uv sync --extra dev
 uv run pytest
 ```
 
-Tests run against the real sample files in `data/` (`results/`, `entries/`, `events/`). Format notes are in `resources/`.
+Tests run against the real sample files in `data/` (`results/`, `entries/`, `events/`, `records/`). Format notes are in `resources/`.

@@ -24,11 +24,11 @@ doesn't keep are written as Team Manager writes them in every sample file:
 Only entries are written: results in the ``Hy3File`` are ignored.
 """
 
-import unicodedata
 from datetime import date, datetime
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple, Union
 
+from hyparse._values import latin1 as _latin1
 from hyparse.checksum import hy3_checksum
 from hyparse.hy3 import F3_FIRST_SLOT, F3_SLOT_WIDTH, F3_SLOTS, LINE_LENGTH, LINE_SPECS
 from hyparse.models import Athlete, Hy3File, IndividualEntry, RelayEntry, Seeding, Team
@@ -227,19 +227,3 @@ def _abbreviation(last_name: Optional[str]) -> str:
 
 def _mmddyyyy(day: Optional[date]) -> str:
     return day.strftime("%m%d%Y") if day else ""
-
-
-def _latin1(text: str) -> str:
-    """Keep characters Latin-1 can hold; strip accents from the rest, else use ``?``."""
-    out = []
-    for ch in text:
-        if ch in "\r\n\t":
-            ch = " "
-        try:
-            ch.encode(ENCODING)
-            out.append(ch)
-        except UnicodeEncodeError:
-            base = unicodedata.normalize("NFKD", ch)
-            base = "".join(c for c in base if not unicodedata.combining(c))
-            out.append(base if base and base.isascii() else "?")
-    return "".join(out)

@@ -5,6 +5,7 @@ import pytest
 DATA = Path(__file__).resolve().parent.parent / "data"
 RESULT_FILES = sorted((DATA / "results").glob("*.hy3"))
 ENTRY_FILES = sorted((DATA / "entries").glob("*.HY3"))
+RECORD_FILES = sorted((DATA / "records").glob("*.rec"))
 
 LOUISVILLE = "2023 Tennessee vs Louisville-12Oct2023"
 INVITATIONAL = "2026 Tennessee Invitational-17Nov2026"
@@ -16,6 +17,10 @@ def entry_file(meet: str) -> Path:
 
 def event_file(meet: str, ext: str) -> Path:
     return DATA / "events" / f"Meet Events-{meet}-002.{ext}"
+
+
+def records_file(name: str) -> Path:
+    return DATA / "records" / f"{name}.rec"
 
 
 def line_counts(path: Path) -> dict:

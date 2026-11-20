@@ -6,7 +6,7 @@ Team Manager in entry files and from Meet Manager in result files.
 """
 
 from datetime import date, datetime
-from typing import List, Literal, Optional
+from typing import Dict, List, Literal, Optional, Tuple
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -247,3 +247,57 @@ class EventFile(_Model):
     format: Literal["ev3", "hyv"]
     meet: Meet
     events: List[Event] = Field(default_factory=list)
+
+
+class Record(_Model):
+    """One record from a records file (.rec): the time, who holds it, and when it was set.
+
+    For a relay, ``team`` is the relay's team and ``relay_swimmers`` are the swimmers as the
+    file writes them (often initial and last name, e.g. ``C. Curzan``); ``name`` is ``None``.
+    """
+
+    gender: Gender
+    distance: int
+    stroke: str  # A-E as in .hy3 files; on a relay, E is the medley relay
+    is_relay: bool = False
+    time: float
+    name: Optional[str] = None
+    team: Optional[str] = None
+    team_abbreviation: Optional[str] = None
+    relay_swimmers: List[str] = Field(default_factory=list)
+    swim_date: Optional[date] = None
+    # Columns 108-110: "A20" on every sample record. Meaning unknown (an age group or record
+    # type?); kept so a file can be written back unchanged.
+    flag: Optional[str] = None
+
+    @property
+    def event_key(self) -> Tuple[str, int, str, bool]:
+        """What makes two records the same event within one file."""
+        return (self.gender, self.distance, self.stroke, self.is_relay)
+
+
+class RecordFile(_Model):
+    """Everything read from one Meet Manager records file (.rec)."""
+
+    path: str
+    name: Optional[str] = None  # the record list, e.g. "NCAA", "American", "Pool"
+    course: Optional[Course] = None
+    created: Optional[date] = None
+    # Header columns 35-50, e.g. "20WIN-MM038.0Gh": the program that wrote the file.
+    software: Optional[str] = None
+    records: List[Record] = Field(default_factory=list)
+
+    def current(self) -> List[Record]:
+        """The standing record for each event: the fastest time, in file order.
+
+        Meet Manager files repeat rows and keep records that have since been broken; this drops
+        both. Ties stay, one row per holder.
+        """
+        best: Dict[Tuple[str, int, str, bool], float] = {}
+        for r in self.records:
+            best[r.event_key] = min(r.time, best.get(r.event_key, r.time))
+        out: List[Record] = []
+        for r in self.records:
+            if r.time == best[r.event_key] and r not in out:
+                out.append(r)
+        return out

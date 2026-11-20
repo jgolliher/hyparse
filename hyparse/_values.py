@@ -1,5 +1,6 @@
 """Helpers that turn raw field text into typed values. Blank or unparseable text becomes None."""
 
+import unicodedata
 from datetime import date, datetime
 from typing import Optional
 
@@ -61,3 +62,19 @@ def format_time(seconds: Optional[float]) -> str:
         f"{secs // 100:02d}.{secs % 100:02d}" if minutes else f"{secs // 100}.{secs % 100:02d}"
     )
     return f"{minutes}:{secs_text}" if minutes else secs_text
+
+
+def latin1(text: str) -> str:
+    """Keep characters Latin-1 can hold; strip accents from the rest, else use ``?``."""
+    out = []
+    for ch in text:
+        if ch in "\r\n\t":
+            ch = " "
+        try:
+            ch.encode("latin-1")
+            out.append(ch)
+        except UnicodeEncodeError:
+            base = unicodedata.normalize("NFKD", ch)
+            base = "".join(c for c in base if not unicodedata.combining(c))
+            out.append(base if base and base.isascii() else "?")
+    return "".join(out)
