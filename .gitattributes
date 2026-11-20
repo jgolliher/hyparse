@@ -48,3 +48,7 @@
 *.so binary
 *.dylib binary
 *.dll binary
+
+# Meet Manager records files: fixed-width binary rows (times are MBF floats)
+*.rec binary
+*.REC binary

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hyparse"
-description = "Read HyTek swim meet files: .hy3 entries and results, .ev3 and .hyv event files"
+description = "Read HyTek swim meet files: .hy3 entries and results, .ev3 and .hyv event files, .rec records"
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [{ name = "John Golliher", email = "jwgollihe@gmail.com" }]

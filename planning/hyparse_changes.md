@@ -21,6 +21,12 @@ hyparse stays a standalone, database-free library that **reads and writes** HyTe
 - [x] pandas is now optional (`hyparse[pandas]`, `hyparse.dataframes`). Python 3.10+.
 - [x] Tests run against every file in `data/`.
 
+## Done (2026-11-20, records files)
+
+- [x] **`.rec` reader + writer** (`hyparse/rec.py`): Meet Manager records files. Fixed 120-byte rows with no line breaks; a header row (list name, course, file date) then one row per record. Times are 4-byte Microsoft Binary Format singles. Writing any of the six samples back gives the same bytes.
+- [x] `RecordFile.current()`: Meet Manager repeats rows and keeps broken records, so this returns the fastest per event (ties kept).
+- [x] `*.rec` marked binary in `.gitattributes`: the time bytes can contain CR/LF.
+
 ## Remaining
 
 - [x] **`.hy3` writer** (entries), `write_hy3()` in `hyparse/hy3_writer.py`. Both sample entry files are reproduced byte for byte from their parsed model. New model fields to make that possible: `Team.team_type` (C1 119–121, `COL`), `Team.registration` (C2 108–111, `USS`), `Athlete.flag` (D1 111, `X`, meaning unknown), `IndividualEntry.seed_flag` (E1 91, `C`, maybe corrected/converted), and `num_dives` on entries and results (the dive count in the distance column). Derived or constant on write: D1 101 `*` (citizenship set and not USA), B2 fee/`O`, the E1/F1 fee and seed slot 1, F1 col 11–12, F3 slot `F`. Not yet checked: that Meet Manager imports a file hyparse wrote from scratch.
@@ -37,5 +43,7 @@ hyparse stays a standalone, database-free library that **reads and writes** HyTe
 | E2 col 12 | `R`, `S`, `F`, `D` (`Q` = DQ confirmed) | Scratch / no-show / false start / DNF variants |
 | E2 col 15 | `X` on 47 result rows | Exhibition swim? |
 | D1 col 101 | `*` | Non-US citizen marker? (seen on CAN/NZL/AUT athletes) |
+| `.rec` record cols 108-110 | `A20` on every row | Age group or record type? Needs a file with age-group records |
+| `.rec` header cols 35-50 | `20WIN-MM038.0Gh` | Program and version that wrote the file |
 | `.ev3` header 6 | `YO` / `LO` | Course + "O" (open?) |
 | `.ev3` event field 4 | `1` / `2` | Number of rounds (`F` → 1, `P` → 2) |
